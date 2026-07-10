@@ -4,44 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EchtGetestet – Finde echte Produkttests statt Fake-Reviews</title>
-<meta name="description" content="Durchsuche gezielt seriöse, unabhängige Testportale wie Stiftung Warentest, ÖKO-TEST, ADAC und RTINGS – ohne Fake-Tests und Affiliate-Schrott.">
+<meta name="description" content="Sucht Produkttests ausschließlich auf seriösen, unabhängigen Testportalen wie Stiftung Warentest, ÖKO-TEST, ADAC und RTINGS – und zeigt die besten Treffer direkt an, sortiert nach Reputation und Zugänglichkeit.">
 <style>
   :root {
-    --bg: #f6f7f9;
-    --surface: #ffffff;
-    --surface-2: #eef1f5;
-    --text: #1a2230;
-    --text-soft: #5a6577;
-    --accent: #1465c0;
-    --accent-soft: #e3eefb;
-    --accent-text: #0d4e97;
-    --green: #1c7c43;
-    --green-soft: #e2f3e8;
+    --bg: #e0e5ec;
+    --text: #38414f;
+    --text-soft: #6e7a8c;
+    --accent: #3b74bd;
+    --accent-2: #3567a8;
+    --accent-text: #2f6bb0;
+    --green: #1f7a4d;
+    --green-2: #196843;
     --amber: #96660a;
-    --amber-soft: #fdf1d8;
-    --border: #d9dee6;
-    --shadow: 0 1px 3px rgba(20,30,50,.08), 0 4px 14px rgba(20,30,50,.06);
-    --radius: 14px;
+    --red: #b03a2e;
+    --sh-d: #b8c1d1;
+    --sh-l: #ffffff;
+    --raise: 9px 9px 18px var(--sh-d), -9px -9px 18px var(--sh-l);
+    --raise-sm: 5px 5px 10px var(--sh-d), -5px -5px 10px var(--sh-l);
+    --raise-xs: 3px 3px 6px var(--sh-d), -3px -3px 6px var(--sh-l);
+    --inset: inset 5px 5px 10px var(--sh-d), inset -5px -5px 10px var(--sh-l);
+    --inset-sm: inset 3px 3px 6px var(--sh-d), inset -3px -3px 6px var(--sh-l);
+    --inset-xs: inset 2px 2px 4px var(--sh-d), inset -2px -2px 4px var(--sh-l);
+    --radius: 20px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #12161d;
-      --surface: #1b212b;
-      --surface-2: #232b38;
-      --text: #e8ecf2;
-      --text-soft: #9aa5b5;
-      --accent: #5aa2e8;
-      --accent-soft: #1d3450;
-      --accent-text: #8fc1f2;
-      --green: #56c07d;
-      --green-soft: #17301f;
+      --bg: #2a2f39;
+      --text: #dde3ec;
+      --text-soft: #96a1b3;
+      --accent: #5f9fdf;
+      --accent-2: #4b88c6;
+      --accent-text: #85b8ee;
+      --green: #58c78b;
+      --green-2: #3fae74;
       --amber: #e0b45c;
-      --amber-soft: #33290f;
-      --border: #313b4a;
-      --shadow: 0 1px 3px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+      --red: #e0837a;
+      --sh-d: #1f232b;
+      --sh-l: #363d4a;
     }
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { scroll-behavior: smooth; }
   body {
     margin: 0;
@@ -50,128 +53,139 @@
     color: var(--text);
     line-height: 1.55;
   }
-  .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
 
   header.hero {
-    background: linear-gradient(160deg, var(--accent-soft), var(--bg) 70%);
-    padding: 48px 0 36px;
-    border-bottom: 1px solid var(--border);
+    padding: 52px 0 12px;
+    text-align: center;
   }
   .logo {
-    display: inline-flex; align-items: center; gap: 10px;
+    display: inline-flex; align-items: center; gap: 12px;
     font-weight: 800; font-size: 1.15rem; letter-spacing: -.01em;
-    color: var(--accent-text); margin-bottom: 18px;
+    color: var(--accent-text); margin-bottom: 22px;
   }
   .logo .mark {
-    width: 34px; height: 34px; border-radius: 9px;
-    background: var(--accent); color: #fff;
-    display: grid; place-items: center; font-size: 1.1rem;
+    width: 40px; height: 40px; border-radius: 13px;
+    background: linear-gradient(145deg, var(--accent), var(--accent-2));
+    color: #fff; box-shadow: var(--raise-sm);
+    display: grid; place-items: center; font-size: 1.15rem;
   }
-  h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 0 0 10px; letter-spacing: -.02em; line-height: 1.15; }
-  .sub { color: var(--text-soft); max-width: 620px; margin: 0 0 28px; font-size: 1.05rem; }
+  h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 10px; letter-spacing: -.02em; line-height: 1.2; }
+  .sub { color: var(--text-soft); max-width: 560px; margin: 0 auto 30px; font-size: 1.02rem; }
 
   .searchbox {
-    display: flex; gap: 10px; flex-wrap: wrap;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 10px; box-shadow: var(--shadow);
+    display: flex; gap: 14px; flex-wrap: wrap; align-items: stretch;
+    max-width: 640px; margin: 0 auto;
   }
   .searchbox input[type="search"] {
-    flex: 1 1 260px; border: none; outline: none; background: transparent;
-    font-size: 1.05rem; color: var(--text); padding: 10px 12px; min-width: 0;
+    flex: 1 1 260px; border: none; outline: none;
+    background: var(--bg); box-shadow: var(--inset);
+    border-radius: 999px; min-width: 0;
+    font-size: 1.02rem; color: var(--text); padding: 15px 24px;
   }
+  .searchbox input[type="search"]::placeholder { color: var(--text-soft); }
+  .searchbox input[type="search"]:focus { box-shadow: var(--inset), 0 0 0 2px var(--accent); }
   .searchbox button {
-    border: none; border-radius: 10px; background: var(--accent); color: #fff;
-    font-size: 1rem; font-weight: 700; padding: 12px 22px; cursor: pointer;
+    border: none; border-radius: 999px; cursor: pointer;
+    background: linear-gradient(145deg, var(--accent), var(--accent-2));
+    color: #fff; box-shadow: var(--raise-sm);
+    font-size: 1rem; font-weight: 700; padding: 14px 30px;
+    transition: box-shadow .15s, transform .15s;
   }
-  .searchbox button:hover { filter: brightness(1.08); }
+  .searchbox button:hover { transform: translateY(-1px); box-shadow: var(--raise); }
+  .searchbox button:active { transform: none; box-shadow: var(--inset-sm); }
+  .searchbox button[disabled] { opacity: .6; cursor: wait; }
+  .cat-hint { font-size: .84rem; color: var(--text-soft); margin: 14px 0 0; min-height: 1.3em; }
 
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-  .chip {
-    border: 1px solid var(--border); background: var(--surface);
-    color: var(--text-soft); border-radius: 999px; padding: 7px 14px;
-    font-size: .88rem; cursor: pointer; transition: all .15s;
-  }
-  .chip:hover { border-color: var(--accent); color: var(--accent-text); }
-  .chip.active {
-    background: var(--accent); border-color: var(--accent);
-    color: #fff; font-weight: 600;
-  }
-
-  .toolbar {
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 12px; margin: 30px 0 6px;
-  }
+  .toolbar { margin: 40px 0 8px; }
   .toolbar h2 { margin: 0; font-size: 1.25rem; }
-  .engine-select { display: flex; align-items: center; gap: 8px; font-size: .88rem; color: var(--text-soft); }
-  .engine-select select {
-    background: var(--surface); color: var(--text); border: 1px solid var(--border);
-    border-radius: 8px; padding: 6px 10px; font-size: .88rem;
-  }
 
-  .meta-btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--green); color: #fff; border: none; cursor: pointer;
-    border-radius: 10px; padding: 12px 18px; font-size: .98rem; font-weight: 700;
-    margin: 14px 0 4px; text-decoration: none;
+  .status {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--bg); box-shadow: var(--inset-sm);
+    border-radius: var(--radius); padding: 16px 20px;
+    color: var(--text-soft); font-size: .92rem; margin: 16px 0;
   }
-  .meta-btn:hover { filter: brightness(1.08); }
-  .hint { font-size: .84rem; color: var(--text-soft); margin: 6px 0 0; }
+  .spinner {
+    width: 26px; height: 26px; flex: 0 0 auto; border-radius: 50%;
+    border: 3px solid var(--sh-d); border-top-color: var(--accent);
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)); gap: 14px; margin: 18px 0 10px; }
+  .results { list-style: none; margin: 22px 0 10px; padding: 0; display: flex; flex-direction: column; gap: 22px; }
   .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 16px 16px 14px;
-    box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px;
+    background: var(--bg); border: none;
+    border-radius: var(--radius); padding: 20px 22px 18px;
+    box-shadow: var(--raise); display: flex; flex-direction: column; gap: 10px;
   }
-  .card h3 { margin: 0; font-size: 1.02rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .card .domain { font-size: .78rem; color: var(--text-soft); font-weight: 400; }
-  .card p { margin: 0; font-size: .87rem; color: var(--text-soft); flex: 1; }
-  .badges { display: flex; flex-wrap: wrap; gap: 6px; }
+  .card h3 { margin: 0; font-size: 1.05rem; line-height: 1.35; }
+  .card h3 a { color: var(--accent-text); text-decoration: none; }
+  .card h3 a:hover { text-decoration: underline; }
+  .snippet { margin: 0; font-size: .9rem; color: var(--text-soft); }
+  .snippet .label { font-weight: 700; color: var(--text); }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .badge {
-    font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px;
-    background: var(--surface-2); color: var(--text-soft);
+    font-size: .72rem; font-weight: 600; padding: 4px 11px; border-radius: 999px;
+    box-shadow: var(--inset-xs); color: var(--text-soft); white-space: nowrap;
   }
-  .badge.paid { background: var(--amber-soft); color: var(--amber); }
-  .badge.free { background: var(--green-soft); color: var(--green); }
-  .badge.lang { background: var(--accent-soft); color: var(--accent-text); }
-  .card a.go {
+  .badge.src { color: var(--accent-text); font-size: .78rem; }
+  .badge.rep { color: var(--amber); letter-spacing: .1em; }
+  .badge.free { color: var(--green); }
+  .badge.paid { color: var(--amber); }
+  .result-link {
     display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
-    color: var(--accent-text); background: var(--accent-soft);
+    color: var(--accent-text); background: var(--bg); box-shadow: var(--raise-xs);
     text-decoration: none; font-weight: 700; font-size: .88rem;
-    padding: 8px 14px; border-radius: 9px; margin-top: 4px;
+    padding: 9px 17px; border-radius: 999px; margin-top: 2px;
+    transition: box-shadow .15s;
   }
-  .card a.go:hover { filter: brightness(1.05); text-decoration: underline; }
-  .card a.home {
-    font-size: .78rem; color: var(--text-soft); text-decoration: none; align-self: flex-start;
-  }
-  .card a.home:hover { color: var(--accent-text); text-decoration: underline; }
+  .result-link:hover { box-shadow: var(--raise-sm); }
+  .result-link:active { box-shadow: var(--inset-sm); }
 
-  .empty-note {
-    background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius);
-    padding: 18px; color: var(--text-soft); font-size: .92rem; margin-top: 16px;
-  }
+  .fallback-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+  .hint { font-size: .84rem; color: var(--text-soft); margin: 14px 0 0; }
+  .hint a { color: var(--accent-text); }
 
-  section.info { margin: 44px 0; }
+  details.sources {
+    margin: 40px 0 0; border-radius: var(--radius);
+    background: var(--bg); box-shadow: var(--raise);
+    padding: 18px 22px;
+  }
+  details.sources summary {
+    cursor: pointer; font-weight: 700; font-size: .95rem; color: var(--text);
+    list-style-position: inside;
+  }
+  details.sources ul { margin: 12px 0 4px; padding-left: 22px; font-size: .88rem; color: var(--text-soft); }
+  details.sources li { margin-bottom: 5px; }
+
+  section.info { margin: 52px 0; }
   section.info h2 { font-size: 1.3rem; margin-bottom: 6px; }
-  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 14px; }
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; margin-top: 18px; }
   .info-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px;
+    background: var(--bg); border: none; box-shadow: var(--raise);
+    border-radius: var(--radius); padding: 22px;
   }
-  .info-card h3 { margin: 0 0 8px; font-size: 1rem; display: flex; gap: 8px; align-items: center; }
+  .info-card h3 { margin: 0 0 10px; font-size: 1rem; display: flex; gap: 8px; align-items: center; }
   .info-card ul { margin: 0; padding-left: 18px; font-size: .88rem; color: var(--text-soft); }
   .info-card li { margin-bottom: 6px; }
-  .warn { border-left: 4px solid #c0392b; }
-  .ok { border-left: 4px solid var(--green); }
+  .warn h3 { color: var(--red); }
+  .ok h3 { color: var(--green); }
 
   footer {
-    border-top: 1px solid var(--border); padding: 26px 0 40px;
+    margin-top: 24px; padding: 30px 0 44px;
     color: var(--text-soft); font-size: .84rem;
+    border-top: 1px solid var(--sh-d);
+    box-shadow: inset 0 1px 0 var(--sh-l);
   }
   footer a { color: var(--accent-text); }
   mark {
-    background: var(--accent-soft); color: var(--accent-text);
-    padding: 0 4px; border-radius: 4px; font-weight: 600;
+    background: var(--bg); box-shadow: var(--inset-xs); color: var(--accent-text);
+    padding: 1px 8px; border-radius: 999px; font-weight: 600; font-size: .92em;
+  }
+  code {
+    background: var(--bg); box-shadow: var(--inset-xs); color: var(--text);
+    padding: 1px 7px; border-radius: 8px; font-size: .88em;
   }
 </style>
 </head>
@@ -180,47 +194,37 @@
 <header class="hero">
   <div class="wrap">
     <div class="logo"><span class="mark">✓</span> EchtGetestet</div>
-    <h1>Finde <em>echte</em> Produkttests –<br>keine Fake-Reviews, keine Affiliate-Fallen.</h1>
+    <h1>Finde <em>echte</em> Produkttests.</h1>
     <p class="sub">
-      Google ist voll von „Test“-Seiten, die nie ein Produkt in der Hand hatten.
-      Diese Seite durchsucht stattdessen gezielt <strong>unabhängige Testportale</strong>,
-      die selbst einkaufen, im Labor prüfen oder redaktionell testen.
+      Ein Suchfeld, ein Knopf: Wir durchsuchen nur unabhängige Testportale
+      und zeigen dir die besten Treffer – sortiert nach Reputation und Zugänglichkeit.
     </p>
 
     <form class="searchbox" id="searchForm" role="search">
-      <input type="search" id="q" placeholder="Produkt eingeben, z. B. „Akkuschrauber“, „OLED Fernseher“, „Kindersitz“ …" autocomplete="off" autofocus>
-      <button type="submit">Tests finden</button>
+      <input type="search" id="q" placeholder="Produkt eingeben, z. B. „Akkuschrauber“ oder „OLED Fernseher“ …" autocomplete="off" autofocus>
+      <button type="submit" id="searchBtn">Tests finden</button>
     </form>
-
-    <div class="chips" id="chips" aria-label="Kategorie wählen"></div>
+    <p class="cat-hint" id="catHint"></p>
   </div>
 </header>
 
 <main class="wrap">
-  <div class="toolbar">
-    <h2 id="resultsTitle">Vertrauenswürdige Testseiten</h2>
-    <label class="engine-select">
-      Suchmaschine:
-      <select id="engine">
-        <option value="ddg" selected>DuckDuckGo</option>
-        <option value="startpage">Startpage</option>
-        <option value="ecosia">Ecosia</option>
-        <option value="google">Google</option>
-        <option value="bing">Bing</option>
-      </select>
-    </label>
-  </div>
+  <section id="resultsSection" hidden>
+    <div class="toolbar">
+      <h2 id="resultsTitle"></h2>
+    </div>
+    <div class="status" id="status" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <span id="statusText"></span>
+    </div>
+    <ol class="results" id="resultsList"></ol>
+    <p class="hint" id="afterHint" hidden></p>
+  </section>
 
-  <a class="meta-btn" id="metaBtn" href="#" target="_blank" rel="noopener">
-    🔎 Alle Seiten dieser Kategorie auf einmal durchsuchen
-  </a>
-  <p class="hint">
-    Öffnet eine Suche, die per <code>site:</code>-Filter <strong>ausschließlich</strong> die unten gelisteten
-    Portale durchsucht – Fake-Testseiten tauchen dort gar nicht erst auf.
-  </p>
-
-  <div class="grid" id="results"></div>
-  <div class="empty-note" id="emptyNote" hidden></div>
+  <details class="sources">
+    <summary>🗂️ Diese Quellen werden durchsucht (und warum wir ihnen vertrauen)</summary>
+    <ul id="sourceList"></ul>
+  </details>
 
   <section class="info" id="fake-erkennen">
     <h2>🕵️ So erkennst du Fake-Tests in 30 Sekunden</h2>
@@ -265,8 +269,8 @@
   <div class="wrap">
     <p>
       <strong>EchtGetestet</strong> ist ein unabhängiges, werbefreies Open-Source-Projekt ohne Affiliate-Links.
-      Wir verlinken nur auf Suchergebnisse – einige Portale (z.&nbsp;B. Stiftung Warentest) finanzieren sich über
-      Bezahlinhalte, gerade <em>weil</em> sie keine Werbung nehmen.
+      Die „Kurzfazits“ sind Auszüge der jeweiligen Testberichte; vollständige Ergebnisse liegen bei manchen
+      Portalen (z.&nbsp;B. Stiftung Warentest) hinter einer Bezahlschranke – gerade <em>weil</em> sie keine Werbung nehmen.
     </p>
     <p>Fehlt ein seriöses Testportal? Vorschläge gern per Issue im Repository.</p>
   </div>
@@ -275,184 +279,124 @@
 <script>
 // ---------------------------------------------------------------------------
 // Kuratierte Whitelist unabhängiger Testportale.
-// Aufnahmekriterien: eigene Tests (Labor/Redaktion/Messungen), transparente
-// Methodik, kein reines Affiliate-Geschäftsmodell.
+// rep: Reputation 1–10 (Unabhängigkeit, Methodik, Labor)
+// access: Zugänglichkeit 0–1 (1 = frei lesbar, 0.5 = teils Paywall)
 // ---------------------------------------------------------------------------
 const SITES = [
-  {
-    name: "Stiftung Warentest", domain: "test.de", lang: "DE",
-    desc: "Kauft Produkte anonym im Handel und testet im Labor. Werbefrei, finanziert über Bezahlinhalte und öffentliche Mittel.",
-    cats: ["haushalt", "elektronik", "kinder", "gesundheit", "garten", "sport", "auto", "allgemein"],
-    badges: ["Labor", "Kauft anonym ein", "Werbefrei"], cost: "teils kostenpflichtig"
-  },
-  {
-    name: "ÖKO-TEST", domain: "oekotest.de", lang: "DE",
-    desc: "Laboranalysen mit Fokus auf Schadstoffe, Inhaltsstoffe und Nachhaltigkeit – von Kosmetik bis Kindersitz.",
-    cats: ["gesundheit", "kinder", "haushalt", "garten", "allgemein"],
-    badges: ["Labor", "Schadstoff-Fokus"], cost: "teils kostenpflichtig"
-  },
-  {
-    name: "Konsument (VKI)", domain: "konsument.at", lang: "AT",
-    desc: "Österreichischer Verein für Konsumenteninformation. Unabhängige Tests, oft gemeinsam mit Stiftung Warentest.",
-    cats: ["haushalt", "elektronik", "gesundheit", "kinder", "allgemein"],
-    badges: ["Labor", "Verbraucherschutz"], cost: "teils kostenpflichtig"
-  },
-  {
-    name: "K-Tipp", domain: "ktipp.ch", lang: "CH",
-    desc: "Schweizer Konsumentenmagazin mit eigenen Labortests. Werbefrei, finanziert über Abos.",
-    cats: ["haushalt", "elektronik", "gesundheit", "allgemein"],
-    badges: ["Labor", "Werbefrei"], cost: "teils kostenpflichtig"
-  },
-  {
-    name: "ADAC", domain: "adac.de", lang: "DE",
-    desc: "Europas größter Verkehrsclub: Crashtests für Kindersitze, Reifen-, Auto-, E-Bike- und Zubehörtests mit eigener Testanlage.",
-    cats: ["auto", "kinder", "sport"],
-    badges: ["Eigene Testanlage", "Crashtests"], cost: "kostenlos"
-  },
-  {
-    name: "auto motor und sport", domain: "auto-motor-und-sport.de", lang: "DE",
-    desc: "Redaktionelle Fahrzeugtests mit Messwerten (Bremsweg, Verbrauch, Fahrleistungen) seit Jahrzehnten.",
-    cats: ["auto"],
-    badges: ["Messwerte", "Redaktion"], cost: "teils kostenpflichtig"
-  },
-  {
-    name: "RTINGS", domain: "rtings.com", lang: "EN",
-    desc: "Kauft alle Geräte selbst und misst nach fester Methodik: TVs, Monitore, Kopfhörer, Staubsauger u. v. m. Extrem detailliert.",
-    cats: ["elektronik", "haushalt"],
-    badges: ["Labor", "Kauft selbst ein", "Messwerte"], cost: "teils kostenpflichtig"
-  },
-  {
-    name: "Notebookcheck", domain: "notebookcheck.com", lang: "DE/EN",
-    desc: "Ausführliche Messlabor-Tests von Laptops, Smartphones und Tablets: Display-Messungen, Akkulaufzeit, Emissionen.",
-    cats: ["elektronik"],
-    badges: ["Messwerte", "Redaktion"], cost: "kostenlos"
-  },
-  {
-    name: "heise / c't", domain: "heise.de", lang: "DE",
-    desc: "c't und heise online testen IT-Produkte redaktionell und technisch tief – eines der ältesten deutschen IT-Testlabore.",
-    cats: ["elektronik"],
-    badges: ["Labor", "Redaktion"], cost: "teils kostenpflichtig"
-  },
-  {
-    name: "ComputerBase", domain: "computerbase.de", lang: "DE",
-    desc: "Unabhängige Hardware-Tests (CPUs, Grafikkarten, Gehäuse, Peripherie) mit eigenen Benchmarks und aktiver Community.",
-    cats: ["elektronik"],
-    badges: ["Benchmarks", "Redaktion"], cost: "kostenlos"
-  },
-  {
-    name: "AV-TEST", domain: "av-test.org", lang: "DE/EN",
-    desc: "Unabhängiges Institut für IT-Sicherheit: vergleicht Antivirus- und Security-Software unter Laborbedingungen.",
-    cats: ["elektronik", "software"],
-    badges: ["Labor", "Institut"], cost: "kostenlos"
-  },
-  {
-    name: "DXOMARK", domain: "dxomark.com", lang: "EN",
-    desc: "Labor-Messungen für Smartphone-Kameras, Displays, Audio und Objektive nach standardisiertem Protokoll.",
-    cats: ["elektronik", "foto"],
-    badges: ["Labor", "Messwerte"], cost: "kostenlos"
-  },
-  {
-    name: "Consumer Reports", domain: "consumerreports.org", lang: "EN",
-    desc: "US-Pendant zur Stiftung Warentest: Non-Profit, kauft alle Produkte selbst, riesiges eigenes Testzentrum.",
-    cats: ["haushalt", "elektronik", "auto", "gesundheit", "allgemein"],
-    badges: ["Non-Profit", "Labor", "Kauft anonym ein"], cost: "teils kostenpflichtig"
-  },
-  {
-    name: "Which?", domain: "which.co.uk", lang: "EN",
-    desc: "Britische Verbraucherorganisation mit eigenen Labortests, werbefrei und abofinanziert.",
-    cats: ["haushalt", "elektronik", "garten", "allgemein"],
-    badges: ["Labor", "Werbefrei"], cost: "teils kostenpflichtig"
-  },
-  {
-    name: "OutdoorGearLab", domain: "outdoorgearlab.com", lang: "EN",
-    desc: "Kauft sämtliche Outdoor-Ausrüstung selbst und testet sie über Monate im Feld – Zelte, Rucksäcke, Schuhe, Jacken.",
-    cats: ["sport", "garten"],
-    badges: ["Kauft selbst ein", "Praxistest"], cost: "kostenlos"
-  },
-  {
-    name: "RunRepeat", domain: "runrepeat.com", lang: "EN",
-    desc: "Zerschneidet und vermisst Lauf- und Sportschuhe im eigenen Labor – Dämpfung, Flexibilität, Materialdicken.",
-    cats: ["sport"],
-    badges: ["Labor", "Kauft selbst ein"], cost: "kostenlos"
-  },
-  {
-    name: "GALAXUS-Community & Fachredaktion", domain: "galaxus.de", lang: "DE",
-    desc: "Redaktionelle Produkttests mit eigenen Fotos und Praxiseinsatz. Gehört zu einem Händler – Tests sind aber redaktionell getrennt und auch mal vernichtend.",
-    cats: ["elektronik", "haushalt", "sport"],
-    badges: ["Redaktion", "Praxistest"], cost: "kostenlos"
-  },
-  {
-    name: "TechStage", domain: "techstage.de", lang: "DE",
-    desc: "Praxistests von Gadgets, E-Scootern, Smart Home und Haushaltsgeräten aus dem heise-Verlag.",
-    cats: ["elektronik", "haushalt"],
-    badges: ["Redaktion", "Praxistest"], cost: "kostenlos"
-  },
-  {
-    name: "Fahrrad-Test: Radfahren & TOUR", domain: "radfahren.de", lang: "DE",
-    desc: "Redaktionelle Fahrrad- und E-Bike-Tests mit Prüfstand-Messungen vom Delius Klasing Verlag.",
-    cats: ["sport", "auto"],
-    badges: ["Messwerte", "Redaktion"], cost: "teils kostenpflichtig"
-  },
-  {
-    name: "medizin-transparent", domain: "medizin-transparent.at", lang: "AT",
-    desc: "Wissenschaftler prüfen Gesundheitsversprechen von Produkten und Wirkstoffen anhand der Studienlage.",
-    cats: ["gesundheit"],
-    badges: ["Wissenschaftlich", "Werbefrei"], cost: "kostenlos"
-  },
-  {
-    name: "Selbst ist der Mann / selbst.de", domain: "selbst.de", lang: "DE",
-    desc: "Werkzeug- und Heimwerker-Tests mit Praxiseinsatz in der Redaktionswerkstatt.",
-    cats: ["garten", "haushalt"],
-    badges: ["Praxistest", "Redaktion"], cost: "kostenlos"
-  }
+  { name: "Stiftung Warentest", domain: "test.de", lang: "DE", rep: 10, access: 0.5,
+    why: "Kauft anonym ein, testet im Labor, werbefrei.",
+    cats: ["haushalt","elektronik","kinder","gesundheit","garten","sport","auto","allgemein"] },
+  { name: "ÖKO-TEST", domain: "oekotest.de", lang: "DE", rep: 9, access: 0.5,
+    why: "Laboranalysen mit Schadstoff-Fokus.",
+    cats: ["gesundheit","kinder","haushalt","garten","allgemein"] },
+  { name: "Konsument (VKI)", domain: "konsument.at", lang: "AT", rep: 9, access: 0.5,
+    why: "Österreichischer Verbraucherschutz, testet oft mit Stiftung Warentest.",
+    cats: ["haushalt","elektronik","gesundheit","kinder","allgemein"] },
+  { name: "K-Tipp", domain: "ktipp.ch", lang: "CH", rep: 9, access: 0.5,
+    why: "Schweizer Konsumentenmagazin, werbefrei, eigene Labortests.",
+    cats: ["haushalt","elektronik","gesundheit","allgemein"] },
+  { name: "ADAC", domain: "adac.de", lang: "DE", rep: 9, access: 1,
+    why: "Eigene Testanlagen, Crashtests, kostenlos lesbar.",
+    cats: ["auto","kinder","sport"] },
+  { name: "auto motor und sport", domain: "auto-motor-und-sport.de", lang: "DE", rep: 8, access: 0.5,
+    why: "Fahrzeugtests mit Messwerten seit Jahrzehnten.",
+    cats: ["auto"] },
+  { name: "RTINGS", domain: "rtings.com", lang: "EN", rep: 9, access: 0.5,
+    why: "Kauft alle Geräte selbst, misst nach fester Methodik.",
+    cats: ["elektronik","haushalt"] },
+  { name: "Notebookcheck", domain: "notebookcheck.com", lang: "DE", rep: 8, access: 1,
+    why: "Messlabor für Laptops, Smartphones, Tablets – kostenlos.",
+    cats: ["elektronik"] },
+  { name: "heise / c't", domain: "heise.de", lang: "DE", rep: 8, access: 0.5,
+    why: "Eines der ältesten deutschen IT-Testlabore.",
+    cats: ["elektronik"] },
+  { name: "ComputerBase", domain: "computerbase.de", lang: "DE", rep: 8, access: 1,
+    why: "Unabhängige Hardware-Benchmarks, kostenlos.",
+    cats: ["elektronik"] },
+  { name: "AV-TEST", domain: "av-test.org", lang: "DE", rep: 9, access: 1,
+    why: "Unabhängiges Institut für IT-Sicherheit.",
+    cats: ["elektronik","software"] },
+  { name: "DXOMARK", domain: "dxomark.com", lang: "EN", rep: 8, access: 1,
+    why: "Standardisierte Labor-Messungen für Kameras, Displays, Audio.",
+    cats: ["elektronik","foto"] },
+  { name: "Consumer Reports", domain: "consumerreports.org", lang: "EN", rep: 9, access: 0.5,
+    why: "US-Non-Profit, kauft anonym ein, riesiges Testzentrum.",
+    cats: ["haushalt","elektronik","auto","gesundheit","allgemein"] },
+  { name: "Which?", domain: "which.co.uk", lang: "EN", rep: 8, access: 0.5,
+    why: "Britische Verbraucherorganisation mit eigenen Labortests.",
+    cats: ["haushalt","elektronik","garten","allgemein"] },
+  { name: "OutdoorGearLab", domain: "outdoorgearlab.com", lang: "EN", rep: 8, access: 1,
+    why: "Kauft Outdoor-Ausrüstung selbst, monatelange Feldtests.",
+    cats: ["sport","garten"] },
+  { name: "RunRepeat", domain: "runrepeat.com", lang: "EN", rep: 8, access: 1,
+    why: "Zerschneidet und vermisst Sportschuhe im eigenen Labor.",
+    cats: ["sport"] },
+  { name: "Galaxus Fachredaktion", domain: "galaxus.de", lang: "DE", rep: 6, access: 1,
+    why: "Redaktionelle Praxistests, auch mal vernichtend – gehört aber zu einem Händler.",
+    cats: ["elektronik","haushalt","sport"] },
+  { name: "TechStage", domain: "techstage.de", lang: "DE", rep: 7, access: 1,
+    why: "Praxistests aus dem heise-Verlag.",
+    cats: ["elektronik","haushalt"] },
+  { name: "Radfahren.de / TOUR", domain: "radfahren.de", lang: "DE", rep: 7, access: 0.5,
+    why: "Fahrrad- und E-Bike-Tests mit Prüfstand-Messungen.",
+    cats: ["sport","auto"] },
+  { name: "medizin-transparent", domain: "medizin-transparent.at", lang: "AT", rep: 9, access: 1,
+    why: "Wissenschaftler prüfen Gesundheitsversprechen anhand der Studienlage.",
+    cats: ["gesundheit"] },
+  { name: "selbst.de", domain: "selbst.de", lang: "DE", rep: 6, access: 1,
+    why: "Werkzeug-Tests in der Redaktionswerkstatt.",
+    cats: ["garten","haushalt"] }
 ];
 
-const CATEGORIES = [
-  { id: "allgemein",  label: "🧭 Alle / Allgemein" },
-  { id: "elektronik", label: "📱 Elektronik & Technik" },
-  { id: "haushalt",   label: "🏠 Haushalt & Küche" },
-  { id: "auto",       label: "🚗 Auto & Mobilität" },
-  { id: "kinder",     label: "🧸 Baby & Kind" },
-  { id: "gesundheit", label: "💊 Gesundheit & Kosmetik" },
-  { id: "sport",      label: "⛰️ Sport & Outdoor" },
-  { id: "garten",     label: "🌿 Garten & Heimwerken" },
-  { id: "foto",       label: "📷 Foto & Kamera" },
-  { id: "software",   label: "💻 Software & Sicherheit" }
-];
+const CATEGORY_LABELS = {
+  allgemein: "Allgemein", elektronik: "Elektronik & Technik", haushalt: "Haushalt & Küche",
+  auto: "Auto & Mobilität", kinder: "Baby & Kind", gesundheit: "Gesundheit & Kosmetik",
+  sport: "Sport & Outdoor", garten: "Garten & Heimwerken", foto: "Foto & Kamera",
+  software: "Software & Sicherheit"
+};
 
-// Schlagwörter zur automatischen Kategorie-Erkennung
 const KEYWORDS = {
-  elektronik: ["fernseher", "tv", "oled", "monitor", "laptop", "notebook", "smartphone", "handy", "iphone", "tablet", "kopfhörer", "in-ear", "earbuds", "lautsprecher", "soundbar", "beamer", "router", "wlan", "konsole", "grafikkarte", "cpu", "prozessor", "ssd", "drucker", "smartwatch", "e-reader", "kindle", "maus", "tastatur", "webcam", "mikrofon", "drohne", "powerbank", "ladegerät"],
-  haushalt: ["staubsauger", "saugroboter", "waschmaschine", "trockner", "geschirrspüler", "spülmaschine", "kühlschrank", "gefrierschrank", "backofen", "herd", "mikrowelle", "kaffeemaschine", "kaffeevollautomat", "espressomaschine", "wasserkocher", "toaster", "mixer", "küchenmaschine", "airfryer", "heißluftfritteuse", "fritteuse", "bügeleisen", "matratze", "luftreiniger", "luftbefeuchter", "ventilator", "heizlüfter", "pfanne", "topf", "messer", "fenstersauger", "dampfreiniger"],
-  auto: ["auto", "pkw", "suv", "e-auto", "elektroauto", "reifen", "winterreifen", "sommerreifen", "ganzjahresreifen", "dashcam", "wallbox", "anhänger", "motorrad", "roller", "e-scooter", "navi", "autokindersitz", "batterieladegerät", "wagenheber"],
-  kinder: ["kindersitz", "babyschale", "kinderwagen", "buggy", "babyphone", "windel", "hochstuhl", "babybett", "beikost", "babynahrung", "milchpumpe", "schnuller", "laufrad", "wickeltisch", "babytrage", "spielzeug"],
-  gesundheit: ["sonnencreme", "zahnpasta", "zahnbürste", "shampoo", "creme", "deo", "blutdruckmessgerät", "fieberthermometer", "vitamin", "nahrungsergänzung", "magnesium", "protein", "massagepistole", "hörgerät", "inhalator", "kontaktlinsen", "make-up", "kosmetik"],
-  sport: ["laufschuhe", "wanderschuhe", "fahrrad", "e-bike", "ebike", "mountainbike", "rennrad", "gravelbike", "zelt", "schlafsack", "isomatte", "rucksack", "trekkingstöcke", "fitnesstracker", "pulsuhr", "hantel", "yogamatte", "ski", "snowboard", "sup", "regenjacke", "wanderjacke", "helm", "fahrradhelm"],
-  garten: ["rasenmäher", "mähroboter", "akkuschrauber", "bohrmaschine", "bohrhammer", "stichsäge", "kreissäge", "kettensäge", "heckenschere", "hochdruckreiniger", "grill", "gasgrill", "pool", "gartenschlauch", "vertikutierer", "laubbläser", "häcksler", "leiter", "werkzeugkoffer", "schraubendreher"],
-  foto: ["kamera", "systemkamera", "spiegelreflex", "objektiv", "gimbal", "actioncam", "gopro", "stativ", "blitzgerät"],
-  software: ["antivirus", "virenscanner", "vpn", "passwortmanager", "backup-software", "office", "firewall"]
+  elektronik: ["fernseher","tv","oled","monitor","laptop","notebook","smartphone","handy","iphone","tablet","kopfhörer","in-ear","earbuds","lautsprecher","soundbar","beamer","router","wlan","konsole","grafikkarte","cpu","prozessor","ssd","drucker","smartwatch","e-reader","kindle","maus","tastatur","webcam","mikrofon","drohne","powerbank","ladegerät"],
+  haushalt: ["staubsauger","saugroboter","waschmaschine","trockner","geschirrspüler","spülmaschine","kühlschrank","gefrierschrank","backofen","herd","mikrowelle","kaffeemaschine","kaffeevollautomat","espressomaschine","wasserkocher","toaster","mixer","küchenmaschine","airfryer","heißluftfritteuse","fritteuse","bügeleisen","matratze","luftreiniger","luftbefeuchter","ventilator","heizlüfter","pfanne","topf","messer","fenstersauger","dampfreiniger"],
+  auto: ["auto","pkw","suv","e-auto","elektroauto","reifen","winterreifen","sommerreifen","ganzjahresreifen","dashcam","wallbox","anhänger","motorrad","roller","e-scooter","navi","autokindersitz","batterieladegerät","wagenheber"],
+  kinder: ["kindersitz","babyschale","kinderwagen","buggy","babyphone","windel","hochstuhl","babybett","beikost","babynahrung","milchpumpe","schnuller","laufrad","wickeltisch","babytrage","spielzeug"],
+  gesundheit: ["sonnencreme","zahnpasta","zahnbürste","shampoo","creme","deo","blutdruckmessgerät","fieberthermometer","vitamin","nahrungsergänzung","magnesium","protein","massagepistole","hörgerät","inhalator","kontaktlinsen","make-up","kosmetik"],
+  sport: ["laufschuhe","wanderschuhe","fahrrad","e-bike","ebike","mountainbike","rennrad","gravelbike","zelt","schlafsack","isomatte","rucksack","trekkingstöcke","fitnesstracker","pulsuhr","hantel","yogamatte","ski","snowboard","sup","regenjacke","wanderjacke","helm","fahrradhelm"],
+  garten: ["rasenmäher","mähroboter","akkuschrauber","bohrmaschine","bohrhammer","stichsäge","kreissäge","kettensäge","heckenschere","hochdruckreiniger","grill","gasgrill","pool","gartenschlauch","vertikutierer","laubbläser","häcksler","leiter","werkzeugkoffer","schraubendreher"],
+  foto: ["kamera","systemkamera","spiegelreflex","objektiv","gimbal","actioncam","gopro","stativ","blitzgerät"],
+  software: ["antivirus","virenscanner","vpn","passwortmanager","backup-software","office","firewall"]
 };
 
-const ENGINES = {
-  ddg:       { name: "DuckDuckGo", url: q => `https://duckduckgo.com/?q=${q}` },
-  startpage: { name: "Startpage",  url: q => `https://www.startpage.com/sp/search?query=${q}` },
-  ecosia:    { name: "Ecosia",     url: q => `https://www.ecosia.org/search?q=${q}` },
-  google:    { name: "Google",     url: q => `https://www.google.com/search?q=${q}` },
-  bing:      { name: "Bing",       url: q => `https://www.bing.com/search?q=${q}` }
-};
+// Öffentliche CORS-Proxys (der Reihe nach probiert). Nötig, weil eine rein
+// statische Seite Suchmaschinen nicht direkt abfragen darf (CORS).
+const PROXIES = [
+  u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+];
+
+const SEARCH_ENDPOINTS = [
+  q => `https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}`,
+  q => `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(q)}`
+];
+
+const MAX_SITES_PER_QUERY = 7;
+const MAX_RESULTS_PER_SITE = 2;
+const MAX_RESULTS_SHOWN = 10;
 
 // --------------------------------------------------------------------------
 
 const $q = document.getElementById("q");
-const $chips = document.getElementById("chips");
-const $results = document.getElementById("results");
-const $engine = document.getElementById("engine");
-const $metaBtn = document.getElementById("metaBtn");
+const $btn = document.getElementById("searchBtn");
+const $catHint = document.getElementById("catHint");
+const $section = document.getElementById("resultsSection");
 const $title = document.getElementById("resultsTitle");
-const $emptyNote = document.getElementById("emptyNote");
+const $status = document.getElementById("status");
+const $statusText = document.getElementById("statusText");
+const $list = document.getElementById("resultsList");
+const $afterHint = document.getElementById("afterHint");
 
-let activeCat = "allgemein";
-let catManuallyChosen = false;
+let searchToken = 0; // entwertet veraltete Suchläufe
 
 function detectCategory(query) {
   const ql = query.toLowerCase();
@@ -462,125 +406,206 @@ function detectCategory(query) {
       if (ql.includes(w) && w.length > bestLen) { best = cat; bestLen = w.length; }
     }
   }
-  return best;
-}
-
-function engineUrl(rawQuery) {
-  return ENGINES[$engine.value].url(encodeURIComponent(rawQuery));
-}
-
-function siteSearchUrl(site, query) {
-  const q = query ? `${query} test site:${site.domain}` : `test site:${site.domain}`;
-  return engineUrl(q);
-}
-
-function metaSearchUrl(sites, query) {
-  const filter = sites.slice(0, 8).map(s => `site:${s.domain}`).join(" OR ");
-  const q = query ? `${query} test (${filter})` : `test (${filter})`;
-  return engineUrl(q);
+  return best || "allgemein";
 }
 
 function sitesForCategory(cat) {
-  if (cat === "allgemein") return SITES;
-  return SITES.filter(s => s.cats.includes(cat));
+  const pool = cat === "allgemein" ? SITES : SITES.filter(s => s.cats.includes(cat));
+  return [...pool].sort((a, b) => (b.rep + b.access) - (a.rep + a.access)).slice(0, MAX_SITES_PER_QUERY);
 }
 
-function renderChips() {
-  $chips.innerHTML = "";
-  for (const c of CATEGORIES) {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "chip" + (c.id === activeCat ? " active" : "");
-    b.textContent = c.label;
-    b.onclick = () => { activeCat = c.id; catManuallyChosen = true; render(); };
-    $chips.appendChild(b);
+async function fetchViaProxy(targetUrl, signal) {
+  for (const proxy of PROXIES) {
+    try {
+      const res = await fetch(proxy(targetUrl), { signal });
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (text && text.length > 300) return text;
+    } catch (e) { /* nächsten Proxy probieren */ }
   }
+  return null;
 }
 
-function render() {
-  const query = $q.value.trim();
-  const sites = sitesForCategory(activeCat);
-  const catLabel = CATEGORIES.find(c => c.id === activeCat).label.replace(/^[^ ]+ /, "");
+function decodeDdgHref(href) {
+  // DDG verlinkt über /l/?uddg=<encoded-url>
+  try {
+    if (href.startsWith("//")) href = "https:" + href;
+    const u = new URL(href, "https://duckduckgo.com");
+    const uddg = u.searchParams.get("uddg");
+    return uddg ? decodeURIComponent(uddg) : href;
+  } catch { return href; }
+}
 
-  renderChips();
+function parseResults(html, site) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const out = [];
 
-  $title.textContent = query
-    ? `Echte Tests für „${query}“ – ${catLabel}`
-    : `Vertrauenswürdige Testseiten – ${catLabel}`;
-
-  $metaBtn.href = metaSearchUrl(sites, query);
-  $metaBtn.textContent = query
-    ? `🔎 „${query}“ auf allen ${Math.min(sites.length, 8)} Seiten gleichzeitig suchen`
-    : `🔎 Alle Seiten dieser Kategorie auf einmal durchsuchen`;
-
-  $results.innerHTML = "";
-  for (const s of sites) {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const costClass = s.cost === "kostenlos" ? "free" : "paid";
-    card.innerHTML = `
-      <h3>${s.name} <span class="domain">${s.domain}</span></h3>
-      <div class="badges">
-        <span class="badge lang">${s.lang}</span>
-        ${s.badges.map(b => `<span class="badge">${b}</span>`).join("")}
-        <span class="badge ${costClass}">${s.cost}</span>
-      </div>
-      <p>${s.desc}</p>
-    `;
-
-    const go = document.createElement("a");
-    go.className = "go";
-    go.target = "_blank";
-    go.rel = "noopener";
-    go.href = siteSearchUrl(s, query);
-    go.textContent = query ? `„${query}“ hier suchen →` : `Tests durchsuchen →`;
-    card.appendChild(go);
-
-    const home = document.createElement("a");
-    home.className = "home";
-    home.target = "_blank";
-    home.rel = "noopener";
-    home.href = `https://www.${s.domain}`;
-    home.textContent = `Direkt zu ${s.domain}`;
-    card.appendChild(home);
-
-    $results.appendChild(card);
+  // Format 1: html.duckduckgo.com
+  for (const el of doc.querySelectorAll(".result:not(.result--ad)")) {
+    const a = el.querySelector("a.result__a");
+    if (!a) continue;
+    const snippet = el.querySelector(".result__snippet");
+    out.push({ title: a.textContent.trim(), url: decodeDdgHref(a.getAttribute("href") || ""), snippet: snippet ? snippet.textContent.trim() : "" });
+  }
+  // Format 2: lite.duckduckgo.com
+  if (out.length === 0) {
+    const links = [...doc.querySelectorAll("a.result-link")];
+    const snippets = [...doc.querySelectorAll("td.result-snippet")];
+    links.forEach((a, i) => {
+      out.push({ title: a.textContent.trim(), url: decodeDdgHref(a.getAttribute("href") || ""), snippet: snippets[i] ? snippets[i].textContent.trim() : "" });
+    });
   }
 
-  $emptyNote.hidden = sites.length > 0;
-  if (sites.length === 0) {
-    $emptyNote.textContent = "Für diese Kategorie haben wir noch keine kuratierten Seiten – nutze „Alle / Allgemein“.";
+  // Nur Treffer, die wirklich auf der Whitelist-Domain liegen
+  return out.filter(r => {
+    try { return new URL(r.url).hostname.endsWith(site.domain); }
+    catch { return false; }
+  }).slice(0, MAX_RESULTS_PER_SITE);
+}
+
+async function searchSite(site, query, signal) {
+  for (const endpoint of SEARCH_ENDPOINTS) {
+    const html = await fetchViaProxy(endpoint(`${query} test site:${site.domain}`), signal);
+    if (!html) continue;
+    const results = parseResults(html, site);
+    if (results.length) return results.map((r, i) => ({ ...r, site, pos: i }));
   }
+  return [];
+}
+
+function relevance(title, query) {
+  const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  if (!words.length) return 0;
+  const t = title.toLowerCase();
+  return words.filter(w => t.includes(w)).length / words.length;
+}
+
+function score(r, query) {
+  return r.site.rep * 10                              // Reputation der Quelle
+       + r.site.access * 14                           // Zugänglichkeit (frei lesbar bevorzugt)
+       + (["DE","AT","CH"].includes(r.site.lang) ? 5 : 0) // deutschsprachig leicht bevorzugt
+       + relevance(r.title, query) * 20               // Titel passt zum Produkt
+       + (r.pos === 0 ? 5 : 2);                       // bestplatzierter Treffer der Quelle
+}
+
+function stars(rep) { return "★".repeat(Math.round(rep / 2)).padEnd(5, "☆"); }
+
+function esc(s) {
+  const d = document.createElement("span");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderResult(r) {
+  const li = document.createElement("li");
+  li.className = "card";
+  const accessBadge = r.site.access >= 1
+    ? `<span class="badge free">frei zugänglich</span>`
+    : `<span class="badge paid">🔒 teils Paywall</span>`;
+  li.innerHTML = `
+    <div class="badges">
+      <span class="badge src">${esc(r.site.name)}</span>
+      <span class="badge rep" title="Reputation ${r.site.rep}/10">${stars(r.site.rep)}</span>
+      ${accessBadge}
+      <span class="badge">${esc(r.site.lang)}</span>
+    </div>
+    <h3><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a></h3>
+    ${r.snippet ? `<p class="snippet"><span class="label">Kurzfazit (Auszug):</span> ${esc(r.snippet)}</p>` : ""}
+    <a class="result-link" href="${esc(r.url)}" target="_blank" rel="noopener">Zum vollständigen Test →</a>
+  `;
+  return li;
+}
+
+function renderFallback(query, sites) {
+  $list.innerHTML = "";
+  const li = document.createElement("li");
+  li.className = "card";
+  const links = sites.map(s =>
+    `<a class="result-link" href="https://duckduckgo.com/?q=${encodeURIComponent(`${query} test site:${s.domain}`)}" target="_blank" rel="noopener">${esc(s.name)} →</a>`
+  ).join("");
+  const metaQ = `${query} test (${sites.map(s => `site:${s.domain}`).join(" OR ")})`;
+  li.innerHTML = `
+    <h3>Direktabruf gerade nicht möglich</h3>
+    <p class="snippet">Die Ergebnis-Vorschau konnte nicht geladen werden (die genutzten
+    CORS-Proxys sind nicht erreichbar oder limitiert). Deine Suche funktioniert trotzdem –
+    ein Klick öffnet sie direkt, gefiltert auf die vertrauenswürdigen Portale:</p>
+    <div class="fallback-links">
+      <a class="result-link" href="https://duckduckgo.com/?q=${encodeURIComponent(metaQ)}" target="_blank" rel="noopener">🔎 Alle Portale auf einmal durchsuchen →</a>
+      ${links}
+    </div>
+  `;
+  $list.appendChild(li);
+}
+
+async function runSearch(query) {
+  const token = ++searchToken;
+  const cat = detectCategory(query);
+  const sites = sitesForCategory(cat);
+
+  $catHint.textContent = cat === "allgemein" ? "" : `Erkannte Kategorie: ${CATEGORY_LABELS[cat]}`;
+  $section.hidden = false;
+  $title.textContent = `Die besten Tests für „${query}“`;
+  $list.innerHTML = "";
+  $afterHint.hidden = true;
+  $status.hidden = false;
+  $statusText.textContent = `Durchsuche ${sites.map(s => s.name).join(", ")} …`;
+  $btn.disabled = true;
+  $section.scrollIntoView({ block: "start", behavior: "smooth" });
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+
+  let results = [];
+  try {
+    const settled = await Promise.allSettled(sites.map(s => searchSite(s, query, controller.signal)));
+    results = settled.flatMap(r => r.status === "fulfilled" ? r.value : []);
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  if (token !== searchToken) return; // eine neuere Suche läuft bereits
+
+  $btn.disabled = false;
+  $status.hidden = true;
+
+  // Duplikate (gleiche URL) entfernen, bewerten, sortieren
+  const seen = new Set();
+  results = results.filter(r => {
+    const key = r.url.replace(/[#?].*$/, "");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  results.sort((a, b) => score(b, query) - score(a, query));
+  results = results.slice(0, MAX_RESULTS_SHOWN);
+
+  if (!results.length) {
+    renderFallback(query, sites);
+    return;
+  }
+
+  for (const r of results) $list.appendChild(renderResult(r));
+
+  const metaQ = `${query} test (${sites.map(s => `site:${s.domain}`).join(" OR ")})`;
+  $afterHint.innerHTML = `Sortiert nach Reputation der Quelle, freier Zugänglichkeit und Relevanz.
+    Nicht fündig geworden? <a href="https://duckduckgo.com/?q=${encodeURIComponent(metaQ)}" target="_blank" rel="noopener">Suche direkt auf allen Portalen öffnen →</a>`;
+  $afterHint.hidden = false;
 }
 
 document.getElementById("searchForm").addEventListener("submit", e => {
   e.preventDefault();
   const query = $q.value.trim();
-  if (!catManuallyChosen) {
-    const detected = detectCategory(query);
-    if (detected) activeCat = detected;
-  }
-  render();
-  if (query) {
-    // Meta-Suche direkt öffnen – das ist der Kern-Use-Case.
-    window.open($metaBtn.href, "_blank", "noopener");
-  }
-  document.getElementById("resultsTitle").scrollIntoView({ block: "start" });
+  if (!query) { $q.focus(); return; }
+  runSearch(query);
 });
 
-$q.addEventListener("input", () => {
-  const query = $q.value.trim();
-  if (!catManuallyChosen && query.length >= 3) {
-    const detected = detectCategory(query);
-    if (detected && detected !== activeCat) { activeCat = detected; }
-  }
-  render();
-});
-
-$engine.addEventListener("change", render);
-
-render();
+// Quellen-Liste befüllen
+const $sourceList = document.getElementById("sourceList");
+for (const s of [...SITES].sort((a, b) => b.rep - a.rep)) {
+  const li = document.createElement("li");
+  li.innerHTML = `<strong>${esc(s.name)}</strong> (${esc(s.domain)}, ${stars(s.rep)}) – ${esc(s.why)}`;
+  $sourceList.appendChild(li);
+}
 </script>
 </body>
 </html>
