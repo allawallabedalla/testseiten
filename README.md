@@ -26,6 +26,23 @@ unabhängiger Testportale abfragt – und die besten Treffer direkt anzeigt.
 Sind die CORS-Proxys nicht erreichbar, fällt die Seite automatisch auf
 direkte Suchlinks zurück – die Suche funktioniert also immer.
 
+## Community-Konsens von Reddit
+
+Parallel zur Portalsuche wertet die Seite Reddit-Diskussionen aus – ganz
+ohne LLM:
+
+1. Passende Threads werden über Reddits JSON-API gesucht (die erlaubt
+   direkte Browser-Aufrufe, Proxys nur als Fallback).
+2. Aus den Top-Kommentaren der besten Threads werden **Produktnennungen
+   extrahiert und upvote-gewichtet gezählt** (Heuristik: Eigennamen und
+   Modellnummern; Stopwörter, generische Begriffe und das Suchwort selbst
+   werden gefiltert, „Roborock" geht in „Roborock S8" auf).
+3. Angezeigt werden die meistgenannten Produkte, die meist-upvoteten
+   Zitate und die ausgewerteten Threads mit Links.
+
+Das ist bewusst als „gewichtetes Stimmungsbild" gekennzeichnet – kein
+Labortest, aber ehrliche Erfahrungen echter Nutzer:innen.
+
 Zusätzlich enthält die Seite eine Checkliste, wie man Fake-Tests in
 30 Sekunden selbst erkennt.
 
@@ -51,7 +68,9 @@ Fehlt ein seriöses Portal? → Issue aufmachen oder PR mit Ergänzung in der
 - Eine einzige `index.html` – kein Build, kein Backend, keine Cookies, kein Tracking
 - Design im **Neumorphism-Stil** (Soft UI), Hell-/Dunkelmodus folgt der Systemeinstellung
 - Ergebnis-Abruf clientseitig über öffentliche CORS-Proxys
-  (`corsproxy.io`, `allorigins.win`, `codetabs.com` – der Reihe nach probiert)
+  (`corsproxy.io`, `allorigins.win` raw+get, `codetabs.com` – der Reihe nach
+  probiert), zusätzlich Bing-Ergebnisse über den Jina-Reader (`r.jina.ai`)
+  als zweiter Suchweg, falls DuckDuckGo die Proxy-IPs blockt
 - Läuft direkt über GitHub Pages oder jeden statischen Webserver
 
 > **Hinweis:** Öffentliche CORS-Proxys sind ein Kompromiss – sie können
