@@ -96,6 +96,14 @@
   .searchbox button:active { transform: none; box-shadow: var(--inset-sm); }
   .searchbox button[disabled] { opacity: .6; cursor: wait; }
   .cat-hint { font-size: .84rem; color: var(--text-soft); margin: 14px 0 0; min-height: 1.3em; }
+  .toggle {
+    display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
+    margin-top: 18px; padding: 9px 17px; border-radius: 999px;
+    background: var(--bg); box-shadow: var(--inset-xs);
+    font-size: .85rem; color: var(--text-soft); user-select: none;
+  }
+  .toggle input { accent-color: var(--accent); width: 15px; height: 15px; margin: 0; }
+  .toggle:has(input:checked) { color: var(--amber); box-shadow: var(--raise-xs); }
 
   .toolbar { margin: 40px 0 8px; }
   .toolbar h2 { margin: 0; font-size: 1.25rem; }
@@ -222,11 +230,26 @@
       <input type="search" id="q" placeholder="Produkt eingeben, z. B. „Akkuschrauber“ oder „OLED Fernseher“ …" autocomplete="off" autofocus>
       <button type="submit" id="searchBtn">Tests finden</button>
     </form>
+    <label class="toggle">
+      <input type="checkbox" id="paywallToggle">
+      🔒 auch Paywall-Quellen einbeziehen
+    </label>
     <p class="cat-hint" id="catHint"></p>
   </div>
 </header>
 
 <main class="wrap">
+  <section id="redditSection" hidden>
+    <div class="toolbar">
+      <h2 id="redditTitle">💬 Echte Nutzer-Erfahrungen</h2>
+    </div>
+    <div class="status" id="redditStatus" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <span id="redditStatusText"></span>
+    </div>
+    <ol class="results" id="redditList"></ol>
+  </section>
+
   <section id="resultsSection" hidden>
     <div class="toolbar">
       <h2 id="resultsTitle"></h2>
@@ -237,17 +260,6 @@
     </div>
     <ol class="results" id="resultsList"></ol>
     <p class="hint" id="afterHint" hidden></p>
-  </section>
-
-  <section id="redditSection" hidden>
-    <div class="toolbar">
-      <h2 id="redditTitle">💬 Community-Konsens von Reddit</h2>
-    </div>
-    <div class="status" id="redditStatus" hidden>
-      <div class="spinner" aria-hidden="true"></div>
-      <span id="redditStatusText"></span>
-    </div>
-    <ol class="results" id="redditList"></ol>
   </section>
 
   <details class="sources">
@@ -441,8 +453,18 @@ function detectCategory(query) {
   return best || "allgemein";
 }
 
+const $paywallToggle = document.getElementById("paywallToggle");
+$paywallToggle.checked = localStorage.getItem("echtgetestet.paywall") === "1";
+$paywallToggle.addEventListener("change", () => {
+  localStorage.setItem("echtgetestet.paywall", $paywallToggle.checked ? "1" : "0");
+  const query = $q.value.trim();
+  if (query && !$section.hidden) runSearch(query);
+});
+
 function sitesForCategory(cat) {
-  const pool = cat === "allgemein" ? SITES : SITES.filter(s => s.cats.includes(cat));
+  let pool = cat === "allgemein" ? SITES : SITES.filter(s => s.cats.includes(cat));
+  // Standard: nur frei zugängliche Quellen – Paywall-Portale nur auf Wunsch
+  if (!$paywallToggle.checked) pool = pool.filter(s => s.access >= 1);
   return [...pool].sort((a, b) => (b.rep + b.access) - (a.rep + a.access)).slice(0, MAX_SITES_PER_QUERY);
 }
 
@@ -556,7 +578,7 @@ function score(r, query) {
   return r.site.rep * 10                              // Reputation der Quelle
        + r.site.access * 14                           // Zugänglichkeit (frei lesbar bevorzugt)
        + (["DE","AT","CH"].includes(r.site.lang) ? 5 : 0) // deutschsprachig leicht bevorzugt
-       + relevance(r.title, query) * 20               // Titel passt zum Produkt
+       + relevance(r.title, query) * 30               // Titel passt zum Produkt
        + (r.pos === 0 ? 5 : 2);                       // bestplatzierter Treffer der Quelle
 }
 
@@ -616,19 +638,28 @@ async function runSearch(query) {
 
   $catHint.textContent = cat === "allgemein" ? "" : `Erkannte Kategorie: ${CATEGORY_LABELS[cat]}`;
   $section.hidden = false;
-  $title.textContent = `Die besten Tests für „${query}“`;
+  $title.textContent = `🔬 Tests unabhängiger Portale zu „${query}“`;
+
+  if (!sites.length) {
+    $status.hidden = true;
+    $list.innerHTML = `<li class="card"><p class="snippet">Für diese Kategorie gibt es keine
+      frei zugänglichen Portale in unserer Liste – aktiviere oben „auch Paywall-Quellen einbeziehen“.</p></li>`;
+    runRedditSearch(query, token);
+    $redditSection.scrollIntoView({ block: "start", behavior: "smooth" });
+    return;
+  }
   $list.innerHTML = "";
   $afterHint.hidden = true;
   $status.hidden = false;
   $statusText.textContent = `Durchsuche ${sites.map(s => s.name).join(", ")} …`;
   $btn.disabled = true;
-  $section.scrollIntoView({ block: "start", behavior: "smooth" });
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 25000);
 
   // Reddit-Konsens parallel starten (rendert eigenständig in eigene Sektion)
   runRedditSearch(query, token);
+  $redditSection.scrollIntoView({ block: "start", behavior: "smooth" });
 
   let results = [];
   try {
@@ -711,15 +742,63 @@ const MENTION_STOP = new Set(`
   januar februar märz april mai juni juli august september oktober november dezember
 `.trim().split(/\s+/));
 
-async function redditJson(url, signal) {
-  // Reddit erlaubt CORS auf .json-Endpunkten – erst direkt, dann über Proxys
+async function fetchJsonDirect(url, signal) {
   try {
     const res = await fetch(url, { signal });
     if (res.ok) return await res.json();
-  } catch { /* weiter mit Proxys */ }
+  } catch { /* Aufrufer probiert den nächsten Weg */ }
+  return null;
+}
+
+async function redditJson(url, signal) {
+  // Erst direkt (falls Reddit CORS erlaubt), dann über Proxys
+  const direct = await fetchJsonDirect(url, signal);
+  if (direct) return direct;
   const text = await fetchViaProxy(url, signal);
   if (text) { try { return JSON.parse(text); } catch { /* kaputt */ } }
   return null;
+}
+
+// PullPush.io: offenes Reddit-Archiv mit freigegebenem CORS – funktioniert
+// direkt aus dem Browser, wenn reddit.com selbst blockt.
+async function fetchRedditThreads(query, signal) {
+  const j = await redditJson(
+    `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=12&sort=relevance&raw_json=1`, signal);
+  let threads = (j?.data?.children || [])
+    .filter(c => c.kind === "t3" && c.data.num_comments >= 5)
+    .map(c => c.data);
+
+  if (!threads.length) {
+    const pp = await fetchJsonDirect(
+      `https://api.pullpush.io/reddit/search/submission/?q=${encodeURIComponent(query)}&size=15&sort=desc&sort_type=score`, signal);
+    threads = (pp?.data || []).filter(t => t.title && t.num_comments >= 5);
+  }
+
+  return threads
+    .sort((a, b) => (b.score + b.num_comments) - (a.score + a.num_comments))
+    .slice(0, MAX_THREADS);
+}
+
+async function fetchThreadComments(thread, signal) {
+  const arr = await redditJson(
+    `https://www.reddit.com/comments/${thread.id}.json?limit=80&sort=top&depth=1&raw_json=1`, signal);
+  let out = [];
+  if (Array.isArray(arr)) {
+    for (const c of arr[1]?.data?.children || []) {
+      if (c.kind !== "t1" || !c.data?.body) continue;
+      out.push({ body: c.data.body, score: c.data.score || 0,
+                 permalink: c.data.permalink || thread.permalink, subreddit: thread.subreddit });
+    }
+  }
+  if (!out.length) {
+    const pp = await fetchJsonDirect(
+      `https://api.pullpush.io/reddit/search/comment/?link_id=t3_${thread.id}&size=100&sort=desc&sort_type=score`, signal);
+    out = (pp?.data || []).filter(c => c.body).map(c => ({
+      body: c.body, score: c.score || 0,
+      permalink: c.permalink || thread.permalink, subreddit: thread.subreddit
+    }));
+  }
+  return out;
 }
 
 function extractMentions(comments, query) {
@@ -848,6 +927,7 @@ function renderRedditFallback(query) {
 
 async function runRedditSearch(query, token) {
   $redditSection.hidden = false;
+  document.getElementById("redditTitle").textContent = `💬 Echte Nutzer-Erfahrungen zu „${query}“`;
   $redditList.innerHTML = "";
   $redditStatus.hidden = false;
   $redditStatusText.textContent = "Suche Reddit-Diskussionen …";
@@ -857,34 +937,16 @@ async function runRedditSearch(query, token) {
   const signal = controller.signal;
 
   try {
-    const search = await redditJson(
-      `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=12&sort=relevance&raw_json=1`, signal);
+    const threads = await fetchRedditThreads(query, signal);
     if (token !== searchToken) return;
-    const threads = (search?.data?.children || [])
-      .filter(c => c.kind === "t3" && c.data.num_comments >= 5)
-      .map(c => c.data)
-      .sort((a, b) => (b.score + b.num_comments) - (a.score + a.num_comments))
-      .slice(0, MAX_THREADS);
 
     if (!threads.length) { $redditStatus.hidden = true; renderRedditFallback(query); return; }
 
     $redditStatusText.textContent = `Lese Kommentare aus ${threads.map(t => "r/" + t.subreddit).join(", ")} …`;
-    const commentSets = await Promise.allSettled(threads.map(t =>
-      redditJson(`https://www.reddit.com/comments/${t.id}.json?limit=80&sort=top&depth=1&raw_json=1`, signal)));
+    const commentSets = await Promise.allSettled(threads.map(t => fetchThreadComments(t, signal)));
     if (token !== searchToken) return;
 
-    const comments = [];
-    commentSets.forEach((res, i) => {
-      if (res.status !== "fulfilled" || !Array.isArray(res.value)) return;
-      for (const c of res.value[1]?.data?.children || []) {
-        if (c.kind !== "t1" || !c.data?.body) continue;
-        comments.push({
-          body: c.data.body, score: c.data.score || 0,
-          permalink: c.data.permalink || threads[i].permalink,
-          subreddit: threads[i].subreddit
-        });
-      }
-    });
+    const comments = commentSets.flatMap(res => res.status === "fulfilled" ? res.value : []);
 
     $redditStatus.hidden = true;
     if (!comments.length) { renderRedditFallback(query); return; }
@@ -909,7 +971,7 @@ document.getElementById("searchForm").addEventListener("submit", e => {
 const $sourceList = document.getElementById("sourceList");
 for (const s of [...SITES].sort((a, b) => b.rep - a.rep)) {
   const li = document.createElement("li");
-  li.innerHTML = `<strong>${esc(s.name)}</strong> (${esc(s.domain)}, ${stars(s.rep)}) – ${esc(s.why)}`;
+  li.innerHTML = `<strong>${esc(s.name)}</strong> (${esc(s.domain)}, ${stars(s.rep)}${s.access < 1 ? ", 🔒 teils Paywall" : ""}) – ${esc(s.why)}`;
   $sourceList.appendChild(li);
 }
 </script>

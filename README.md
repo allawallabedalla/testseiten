@@ -11,6 +11,10 @@ unabhängiger Testportale abfragt – und die besten Treffer direkt anzeigt.
 ## Wie es funktioniert
 
 1. **Produkt eingeben, Knopf drücken** – mehr Bedienung gibt es nicht.
+   Standardmäßig werden **nur frei zugängliche Quellen** durchsucht;
+   Paywall-Portale (Stiftung Warentest & Co.) lassen sich per Schalter
+   dazuschalten. **Echte Nutzer-Erfahrungen (Reddit) stehen zuoberst**,
+   darunter die Tests unabhängiger Portale.
 2. Die Kategorie wird automatisch erkannt (Schlagwort-Matching), passende
    Portale werden ausgewählt.
 3. Die Seite ruft die Suchergebnisse der Portale ab (DuckDuckGo mit
@@ -31,8 +35,10 @@ direkte Suchlinks zurück – die Suche funktioniert also immer.
 Parallel zur Portalsuche wertet die Seite Reddit-Diskussionen aus – ganz
 ohne LLM:
 
-1. Passende Threads werden über Reddits JSON-API gesucht (die erlaubt
-   direkte Browser-Aufrufe, Proxys nur als Fallback).
+1. Passende Threads werden über Reddits JSON-API gesucht; blockt Reddit
+   (kein CORS, Proxy-IPs gesperrt), übernimmt **PullPush.io** – ein offenes
+   Reddit-Archiv mit freigegebenem CORS, das direkt aus dem Browser
+   funktioniert.
 2. Aus den Top-Kommentaren der besten Threads werden **Produktnennungen
    extrahiert und upvote-gewichtet gezählt** (Heuristik: Eigennamen und
    Modellnummern; Stopwörter, generische Begriffe und das Suchwort selbst
