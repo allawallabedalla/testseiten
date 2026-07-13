@@ -43,4 +43,4 @@ die du brauchst, und erfinde neue dazu:
 
 <!-- Neue Ideen hier eintragen, damit man sie schnell findet. -->
 
-- _(noch keine Ideen – lege die erste an)_
+- [Optimierte Ernährung für hochsensible vegetarische Personen](ernaehrung-hochsensible-vegetarier/) — 💡 Idee
