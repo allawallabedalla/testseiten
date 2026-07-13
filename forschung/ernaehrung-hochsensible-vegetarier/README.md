@@ -5,9 +5,19 @@
 > stabile Energie, ruhiges Nervensystem und gute Verträglichkeit, ohne
 > Nährstofflücken?
 
-- **Status:** 💡 Idee
+- **Status:** 🔬 in Arbeit — erster Meilenstein abgeschlossen
 - **Angelegt am:** 2026-07-13
 - **Schlagwörter:** #ernaehrung #vegetarisch #hochsensibel #hsp #nervensystem #mikronaehrstoffe
+
+## 📄 Ergebnisse
+
+- **Forschungsbericht:** [`entwuerfe/forschungsbericht-smph.md`](entwuerfe/forschungsbericht-smph.md)
+  — hypothesengenerierendes mechanistisches Review (~5.200 Wörter) mit dem Novum
+  **Sensorisch-Metabolische Pufferhypothese (SMPH)**.
+- **Methodik- & Evidenz-Anhang:** [`daten/evidenz-methodik-appendix.md`](daten/evidenz-methodik-appendix.md)
+  — Hypothesen, Kausalmodell, 48 Rohbefunde mit Quelle/Konfidenz, Peer-Review-Protokoll.
+- **Studienprotokoll / Projektaufbau:** [`notizen/studienprotokoll.md`](notizen/studienprotokoll.md)
+  — Systematik, Rollen, Zielresultate, Ablauf.
 
 ## Fragestellung
 
