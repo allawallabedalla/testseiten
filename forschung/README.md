@@ -43,4 +43,5 @@ die du brauchst, und erfinde neue dazu:
 
 <!-- Neue Ideen hier eintragen, damit man sie schnell findet. -->
 
-- [Optimierte Ernährung für hochsensible vegetarische Personen](ernaehrung-hochsensible-vegetarier/) — 💡 Idee
+- [Optimierte Ernährung für hochsensible vegetarische Personen](ernaehrung-hochsensible-vegetarier/) — 🔬 in Arbeit
+- [Rechnen KI-Firmen selbst mit dem Platzen der Blase?](ki-industrie-blasen-hypothese/) — ✅ Bericht vorhanden

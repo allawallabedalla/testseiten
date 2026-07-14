@@ -4,9 +4,35 @@
 > Verhalten (überstürzte Börsengänge, Insider-Signale, Finanzierungsstrukturen)
 > signalisiert, intern mit einer Korrektur oder einem Crash zu rechnen.
 
-- **Status:** 🔬 in Arbeit
+- **Status:** ✅ erster Meilenstein abgeschlossen
 - **Angelegt am:** 2026-07-14
 - **Schlagwörter:** #ki #industrie #blase #boersengang #kapitalmarkt #capex #hype
+
+## 📄 Ergebnisse
+
+- **Bericht:** [`entwuerfe/bericht-ki-blase.md`](entwuerfe/bericht-ki-blase.md) ·
+  [PDF](entwuerfe/bericht-ki-blase.pdf) — ergebnisoffene Prüfung (~4.800 Wörter).
+- **Methodik- & Evidenz-Anhang:** [`daten/evidenz-methodik-appendix.md`](daten/evidenz-methodik-appendix.md)
+  — 62 datierte Rohbefunde mit Stance/Konfidenz + Faktencheck-Protokoll.
+
+## Kernbefund (kalibriertes Urteil, Konfidenz: mittel)
+
+Die These in der **starken Lesart** („Firmen antizipieren intern einen Crash und
+positionieren sich defensiv") ist **überwiegend nicht gestützt**; in der
+**schwachen Lesart** („Akteure sehen Überhitzung und realisieren Buchgewinne,
+solange das Fenster offen ist") **teilweise gestützt**.
+
+- **Dafür:** Führende CEOs (Altman, Zuckerberg, Pichai, Hassabis, Amodei) räumen
+  Aug–Nov 2025 wörtlich eine „Blase"/Irrationalität ein; breites Cash-out
+  peripherer/bereits börsennotierter Akteure (CoreWeave-Gründer, Magnetar,
+  Chip-Insider) bei Höchstbewertungen; punktuelle Bilanz-Vorsicht.
+- **Dagegen (stärker gewichtet — revealed preferences):** Rekord-Capex (~725 Mrd.
+  USD 2026, +77 %), mehrjährige nicht-stornierbare Compute-Zusagen, Kernlab-Insider
+  (Anthropic) *halten* statt zu verkaufen. Wer einen nahen Crash einpreist, bindet
+  keine hunderte Milliarden in abschreibungsintensive Assets.
+- **Zentrale Spannung:** Worte („Blase") vs. Taten (Doubling-down). Das scheinbar
+  stärkste Handlungssignal — Insiderverkäufe — ist dreifach konfundiert (10b5-1,
+  Peripherie-Zuordnung, Base-Rate der Aktienvergütung).
 
 ## Fragestellung
 
