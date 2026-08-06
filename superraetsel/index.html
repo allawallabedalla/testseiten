@@ -3,71 +3,479 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperRätsel</title>
+<title>SuperRätsel — vier Kategorien, vier Beispiele</title>
 <style>
   :root {
     color-scheme: light dark;
-    --bg: #f4f5f7;
-    --card: #ffffff;
-    --text: #1c1e21;
-    --muted: #6b7280;
-    --accent: #4f46e5;
+    --paper: #eae6d6;
+    --ink: #211d16;
+    --ink-muted: #6b6350;
+    --line: #d3cbb2;
+    --card-bg: #f4f0e3;
+    --classic: #9c6a1f;
+    --digital: #5b3df5;
+    --fusion: #b23a9e;
+    --ok: #3d7a3f;
+    --ok-soft: #dcead6;
+    --warn: #b08a1e;
+    --warn-soft: #f0e6c2;
+    --miss: #a8a08c;
+    --shadow: rgba(33, 29, 22, 0.08);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #14161a;
-      --card: #1e2126;
-      --text: #f1f2f4;
-      --muted: #9aa0aa;
-      --accent: #818cf8;
+      --paper: #18151d;
+      --ink: #ece5d4;
+      --ink-muted: #a89d84;
+      --line: #35303f;
+      --card-bg: #201c28;
+      --classic: #d79c4a;
+      --digital: #9c8bff;
+      --fusion: #e069c9;
+      --ok: #7fbf6f;
+      --ok-soft: #24371f;
+      --warn: #d9b24a;
+      --warn-soft: #3a3118;
+      --miss: #5c5568;
+      --shadow: rgba(0, 0, 0, 0.35);
     }
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    color: var(--text);
+    background: var(--paper);
+    color: var(--ink);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    padding: 24px;
+    line-height: 1.55;
   }
-  .card {
-    background: var(--card);
+  h1, h2 {
+    font-family: Iowan Old Style, "Palatino Linotype", Palatino, Georgia, serif;
+    text-wrap: balance;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 48px 20px 96px; }
+
+  header { text-align: center; margin-bottom: 48px; }
+  header .kicker {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  header h1 { font-size: clamp(2rem, 6vw, 3rem); margin: 10px 0 8px; }
+  header h1 .grad {
+    background: linear-gradient(92deg, var(--classic), var(--fusion), var(--digital));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header p { color: var(--ink-muted); max-width: 520px; margin: 0 auto; }
+
+  .game {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
     border-radius: 16px;
-    padding: 40px 32px;
-    max-width: 480px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 26px 24px 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 10px var(--shadow);
   }
-  h1 {
-    margin: 0 0 8px;
-    font-size: 1.8rem;
-  }
-  p.subtitle {
-    color: var(--muted);
-    margin: 0 0 24px;
-  }
-  .status {
+  .game .cat {
     display: inline-block;
-    padding: 6px 14px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
     border-radius: 999px;
-    background: var(--accent);
-    color: white;
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    margin-bottom: 12px;
   }
+  .cat.wort { color: var(--classic); border: 1px solid var(--classic); }
+  .cat.logik { color: var(--digital); border: 1px solid var(--digital); }
+  .cat.visuell { color: var(--fusion); border: 1px solid var(--fusion); }
+  .cat.escape { color: var(--ok); border: 1px solid var(--ok); }
+  .game h2 { margin: 0 0 6px; font-size: 1.45rem; }
+  .game .intro { color: var(--ink-muted); font-size: 0.95rem; margin: 0 0 20px; }
+
+  button {
+    font: inherit;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--ink);
+    color: var(--paper);
+    cursor: pointer;
+  }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--digital); outline-offset: 2px; }
+  button.secondary { background: transparent; color: var(--ink); }
+  input[type="text"] {
+    font: inherit;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .msg { font-size: 0.92rem; margin-top: 12px; min-height: 1.4em; }
+  .msg.ok { color: var(--ok); font-weight: 600; }
+  .msg.err { color: var(--fusion); }
+
+  .fakt {
+    display: none;
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--classic);
+    background: var(--paper);
+    border-radius: 0 10px 10px 0;
+    font-size: 0.92rem;
+  }
+  .fakt.show { display: block; }
+  .fakt b { color: var(--classic); }
+
+  /* Wortle */
+  .board { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .row { display: flex; gap: 6px; }
+  .tile {
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    font-weight: 700; font-size: 1.3rem;
+    text-transform: uppercase;
+    background: var(--paper);
+  }
+  .tile.hit { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .tile.near { background: var(--warn); border-color: var(--warn); color: #fff; }
+  .tile.miss { background: var(--miss); border-color: var(--miss); color: #fff; }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  #wortInput { width: 150px; text-transform: uppercase; letter-spacing: 0.2em; font-weight: 700; }
+
+  /* Zahlenschloss */
+  .hints { margin: 0 0 18px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .hints li {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 0.93rem;
+  }
+  .hints .code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-weight: 700; font-size: 1.05rem;
+    letter-spacing: 0.35em;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 10px 6px 14px;
+    white-space: nowrap;
+  }
+  .lock-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .digit {
+    width: 52px; height: 52px;
+    text-align: center;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 1.4rem; font-weight: 700;
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  /* Schiebepuzzle */
+  .slide-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 72px);
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .slide-tile {
+    width: 72px; height: 72px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 1.5rem; font-weight: 700;
+    background: var(--paper);
+    border: 2px solid var(--fusion);
+    color: var(--fusion);
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 0;
+  }
+  .slide-tile.empty { background: transparent; border: 2px dashed var(--line); cursor: default; }
+  .slide-meta { font-size: 0.88rem; color: var(--ink-muted); margin-bottom: 12px; }
+
+  /* Escape */
+  .riddle {
+    font-family: Iowan Old Style, "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: 1.12rem;
+    font-style: italic;
+    padding: 16px 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin: 0 0 16px;
+  }
+  .chest { font-size: 2.2rem; margin-right: 6px; vertical-align: middle; }
+
+  footer { text-align: center; color: var(--ink-muted); font-size: 0.85rem; margin-top: 40px; }
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>SuperRätsel</h1>
-    <p class="subtitle">Eigenständiges Projekt, unabhängig von der Haupt-Website.</p>
-    <span class="status">Grundgerüst bereit</span>
-  </div>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">Prototyp · vier Kategorien</div>
+    <h1>Super<span class="grad">Rätsel</span></h1>
+    <p>Je ein spielbares Beispiel pro Kategorie — mit Herkunfts-Fakt nach jeder Lösung, wie im Core Loop vorgesehen.</p>
+  </header>
+
+  <!-- 1 · WORT -->
+  <section class="game" aria-labelledby="wort-h">
+    <span class="cat wort">Kategorie 1 · Wort</span>
+    <h2 id="wort-h">Wortle</h2>
+    <p class="intro">Errate das deutsche Wort mit 5 Buchstaben in 6 Versuchen. Grün = richtiger Buchstabe am richtigen Platz, Gelb = richtiger Buchstabe am falschen Platz.</p>
+    <div class="board" id="wortBoard"></div>
+    <div class="controls">
+      <input type="text" id="wortInput" maxlength="5" placeholder="?????" aria-label="Wort mit 5 Buchstaben">
+      <button id="wortBtn">Raten</button>
+    </div>
+    <p class="msg" id="wortMsg"></p>
+    <div class="fakt" id="wortFakt"><b>Herkunfts-Fakt:</b> Wordle wurde 2021 von Josh Wardle als Geschenk für seine Partnerin gebaut. Das Prinzip „nur ein Rätsel pro Tag, alle lösen dasselbe Wort“ machte es zum viralen Phänomen — die New York Times kaufte es für einen siebenstelligen Betrag.</div>
+  </section>
+
+  <!-- 2 · LOGIK -->
+  <section class="game" aria-labelledby="logik-h">
+    <span class="cat logik">Kategorie 2 · Logik &amp; Zahl</span>
+    <h2 id="logik-h">Das Zahlenschloss</h2>
+    <p class="intro">Ein Schloss mit drei Ziffern. Fünf Fehlversuche liegen daneben — jede Notiz verrät etwas. Knacke den Code.</p>
+    <ul class="hints">
+      <li><span class="code">6 8 2</span> Eine Ziffer ist richtig und steht an der richtigen Stelle.</li>
+      <li><span class="code">6 1 4</span> Eine Ziffer ist richtig, steht aber an der falschen Stelle.</li>
+      <li><span class="code">2 0 6</span> Zwei Ziffern sind richtig, beide an der falschen Stelle.</li>
+      <li><span class="code">7 3 8</span> Keine Ziffer ist richtig.</li>
+      <li><span class="code">3 8 0</span> Eine Ziffer ist richtig, steht aber an der falschen Stelle.</li>
+    </ul>
+    <div class="lock-controls">
+      <input class="digit" id="d1" maxlength="1" inputmode="numeric" aria-label="Erste Ziffer">
+      <input class="digit" id="d2" maxlength="1" inputmode="numeric" aria-label="Zweite Ziffer">
+      <input class="digit" id="d3" maxlength="1" inputmode="numeric" aria-label="Dritte Ziffer">
+      <button id="lockBtn">Öffnen</button>
+    </div>
+    <p class="msg" id="lockMsg"></p>
+    <div class="fakt" id="lockFakt"><b>Herkunfts-Fakt:</b> Dieses Rätsel gehört zur Familie der Deduktionsspiele wie „Mastermind“ (1970) — dessen Urahn „Bulls and Cows“ schon lange davor mit Papier und Stift gespielt wurde. Aus wenigen Hinweisen das Ganze erschließen: das Grundprinzip jeder Logik-Deduktion.</div>
+  </section>
+
+  <!-- 3 · VISUELL -->
+  <section class="game" aria-labelledby="visuell-h">
+    <span class="cat visuell">Kategorie 3 · Visuell &amp; Räumlich</span>
+    <h2 id="visuell-h">Das Schiebepuzzle</h2>
+    <p class="intro">Bringe die Zahlen 1–8 in die richtige Reihenfolge. Tippe ein Feld neben der Lücke, um es zu verschieben.</p>
+    <div class="slide-meta">Züge: <b id="moveCount">0</b></div>
+    <div class="slide-grid" id="slideGrid" role="group" aria-label="Schiebepuzzle 3 mal 3"></div>
+    <button class="secondary" id="shuffleBtn">Neu mischen</button>
+    <p class="msg" id="slideMsg"></p>
+    <div class="fakt" id="slideFakt"><b>Herkunfts-Fakt:</b> Das 15-Puzzle löste in den 1880ern die erste dokumentierte Puzzle-Massenhysterie aus — Sam Loyd lobte 1.000 Dollar für eine unlösbare Stellung aus (er wusste: mathematisch unmöglich). Der direkte Vorfahr von Rubik's Cube und jedem Schiebe-Game auf dem Smartphone.</div>
+  </section>
+
+  <!-- 4 · ESCAPE -->
+  <section class="game" aria-labelledby="escape-h">
+    <span class="cat escape">Kategorie 4 · Escape-Room-Stil</span>
+    <h2 id="escape-h">Die verschlossene Truhe</h2>
+    <p class="intro"><span class="chest">🧰</span>Vor dir steht eine Truhe. Auf dem Deckel klebt ein Zettel — die Antwort auf das Rätsel ist das Losungswort.</p>
+    <p class="riddle">„Ich habe Städte, aber keine Häuser.<br>Ich habe Wälder, aber keine Bäume.<br>Ich habe Flüsse, aber kein Wasser.<br>Was bin ich?“</p>
+    <div class="controls">
+      <input type="text" id="escapeInput" placeholder="Losungswort …" aria-label="Losungswort">
+      <button id="escapeBtn">Truhe öffnen</button>
+    </div>
+    <p class="msg" id="escapeMsg"></p>
+    <div class="fakt" id="escapeFakt"><b>Herkunfts-Fakt:</b> Das „Was bin ich?“-Format ist über 2.500 Jahre alt — schon das Rätsel der Sphinx vor Theben folgte ihm. Moderne Escape Rooms (im Schnitt 10–12 Rätsel pro Raum) sind seine direkte Fortsetzung: Wissen als Schlüssel, der eine Tür öffnet.</div>
+  </section>
+
+  <footer>SuperRätsel · Prototyp — je ein Beispiel pro Kategorie. Täglich rotierende Kategorie, Streaks &amp; teilbare Ergebnisse folgen im nächsten Schritt.</footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 1 · Wortle ---------- */
+  var WORT = "KRAFT";
+  var MAX_TRIES = 6;
+  var tries = 0, solved = false;
+  var board = document.getElementById("wortBoard");
+  var input = document.getElementById("wortInput");
+  var wortMsg = document.getElementById("wortMsg");
+
+  for (var r = 0; r < MAX_TRIES; r++) {
+    var row = document.createElement("div");
+    row.className = "row";
+    for (var c = 0; c < 5; c++) {
+      var t = document.createElement("div");
+      t.className = "tile";
+      row.appendChild(t);
+    }
+    board.appendChild(row);
+  }
+
+  function guessWort() {
+    if (solved || tries >= MAX_TRIES) return;
+    var g = input.value.trim().toUpperCase()
+      .replace(/Ä/g, "AE").replace(/Ö/g, "OE").replace(/Ü/g, "UE").replace(/ß/g, "SS");
+    if (!/^[A-Z]{5}$/.test(g)) {
+      wortMsg.textContent = "Bitte genau 5 Buchstaben eingeben.";
+      wortMsg.className = "msg err";
+      return;
+    }
+    var rowTiles = board.children[tries].children;
+    var target = WORT.split("");
+    var status = ["miss", "miss", "miss", "miss", "miss"];
+    for (var i = 0; i < 5; i++) {
+      if (g[i] === target[i]) { status[i] = "hit"; target[i] = null; }
+    }
+    for (var j = 0; j < 5; j++) {
+      if (status[j] === "miss") {
+        var idx = target.indexOf(g[j]);
+        if (idx !== -1) { status[j] = "near"; target[idx] = null; }
+      }
+    }
+    for (var k = 0; k < 5; k++) {
+      rowTiles[k].textContent = g[k];
+      rowTiles[k].classList.add(status[k]);
+    }
+    tries++;
+    input.value = "";
+    if (g === WORT) {
+      solved = true;
+      wortMsg.textContent = "Gelöst in " + tries + (tries === 1 ? " Versuch!" : " Versuchen!");
+      wortMsg.className = "msg ok";
+      document.getElementById("wortFakt").classList.add("show");
+    } else if (tries >= MAX_TRIES) {
+      wortMsg.textContent = "Das Wort war: " + WORT + ". Morgen gibt's ein neues!";
+      wortMsg.className = "msg err";
+    } else {
+      wortMsg.textContent = (MAX_TRIES - tries) + " Versuche übrig.";
+      wortMsg.className = "msg";
+    }
+  }
+  document.getElementById("wortBtn").addEventListener("click", guessWort);
+  input.addEventListener("keydown", function (e) { if (e.key === "Enter") guessWort(); });
+
+  /* ---------- 2 · Zahlenschloss ---------- */
+  var CODE = "042";
+  var lockMsg = document.getElementById("lockMsg");
+  var digits = [document.getElementById("d1"), document.getElementById("d2"), document.getElementById("d3")];
+  digits.forEach(function (d, i) {
+    d.addEventListener("input", function () {
+      d.value = d.value.replace(/\D/g, "").slice(0, 1);
+      if (d.value && i < 2) digits[i + 1].focus();
+    });
+    d.addEventListener("keydown", function (e) { if (e.key === "Enter") tryLock(); });
+  });
+  function tryLock() {
+    var attempt = digits.map(function (d) { return d.value; }).join("");
+    if (attempt.length < 3) {
+      lockMsg.textContent = "Alle drei Ziffern eingeben.";
+      lockMsg.className = "msg err";
+      return;
+    }
+    if (attempt === CODE) {
+      lockMsg.textContent = "Klick! Das Schloss springt auf.";
+      lockMsg.className = "msg ok";
+      document.getElementById("lockFakt").classList.add("show");
+    } else {
+      lockMsg.textContent = "Bleibt zu. Prüfe die Notizen noch einmal.";
+      lockMsg.className = "msg err";
+    }
+  }
+  document.getElementById("lockBtn").addEventListener("click", tryLock);
+
+  /* ---------- 3 · Schiebepuzzle ---------- */
+  var grid = document.getElementById("slideGrid");
+  var moveEl = document.getElementById("moveCount");
+  var slideMsg = document.getElementById("slideMsg");
+  var state, moves, slideSolved;
+
+  function neighborsOfEmpty() {
+    var e = state.indexOf(0);
+    var out = [];
+    var row = Math.floor(e / 3), col = e % 3;
+    if (row > 0) out.push(e - 3);
+    if (row < 2) out.push(e + 3);
+    if (col > 0) out.push(e - 1);
+    if (col < 2) out.push(e + 1);
+    return out;
+  }
+  function shuffle() {
+    state = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+    do {
+      var last = -1;
+      for (var s = 0; s < 60; s++) {
+        var opts = neighborsOfEmpty().filter(function (n) { return n !== last; });
+        var pick = opts[Math.floor(Math.random() * opts.length)];
+        last = state.indexOf(0);
+        state[last] = state[pick];
+        state[pick] = 0;
+      }
+    } while (state.join(",") === "1,2,3,4,5,6,7,8,0");
+    moves = 0;
+    slideSolved = false;
+    slideMsg.textContent = "";
+    slideMsg.className = "msg";
+    render();
+  }
+  function render() {
+    moveEl.textContent = moves;
+    grid.innerHTML = "";
+    state.forEach(function (v, i) {
+      var cell = document.createElement("button");
+      cell.className = "slide-tile" + (v === 0 ? " empty" : "");
+      cell.type = "button";
+      if (v !== 0) {
+        cell.textContent = v;
+        cell.setAttribute("aria-label", "Feld " + v);
+        cell.addEventListener("click", function () { move(i); });
+      } else {
+        cell.setAttribute("aria-label", "Leeres Feld");
+        cell.disabled = true;
+      }
+      grid.appendChild(cell);
+    });
+  }
+  function move(i) {
+    if (slideSolved) return;
+    var e = state.indexOf(0);
+    if (neighborsOfEmpty().indexOf(i) === -1) return;
+    state[e] = state[i];
+    state[i] = 0;
+    moves++;
+    render();
+    if (state.join(",") === "1,2,3,4,5,6,7,8,0") {
+      slideSolved = true;
+      slideMsg.textContent = "Gelöst in " + moves + " Zügen!";
+      slideMsg.className = "msg ok";
+      document.getElementById("slideFakt").classList.add("show");
+    }
+  }
+  document.getElementById("shuffleBtn").addEventListener("click", shuffle);
+  shuffle();
+
+  /* ---------- 4 · Escape ---------- */
+  var ANSWERS = ["karte", "landkarte", "eine karte", "eine landkarte", "die karte", "die landkarte", "weltkarte"];
+  var escInput = document.getElementById("escapeInput");
+  var escMsg = document.getElementById("escapeMsg");
+  function tryEscape() {
+    var a = escInput.value.trim().toLowerCase();
+    if (!a) { escMsg.textContent = "Gib ein Losungswort ein."; escMsg.className = "msg err"; return; }
+    if (ANSWERS.indexOf(a) !== -1) {
+      escMsg.textContent = "Die Truhe schwingt auf — darin liegt der Schlüssel zum nächsten Raum!";
+      escMsg.className = "msg ok";
+      document.getElementById("escapeFakt").classList.add("show");
+    } else {
+      escMsg.textContent = "Die Truhe bleibt verschlossen. Lies das Rätsel noch einmal laut.";
+      escMsg.className = "msg err";
+    }
+  }
+  document.getElementById("escapeBtn").addEventListener("click", tryEscape);
+  escInput.addEventListener("keydown", function (e) { if (e.key === "Enter") tryEscape(); });
+})();
+</script>
 </body>
 </html>
