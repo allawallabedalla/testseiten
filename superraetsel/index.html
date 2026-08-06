@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperRätsel — vier Kategorien, vier Beispiele</title>
+<title>SuperRätsel — vier Rätsel am Tag</title>
 <style>
   :root {
     color-scheme: light dark;
@@ -16,9 +16,7 @@
     --digital: #5b3df5;
     --fusion: #b23a9e;
     --ok: #3d7a3f;
-    --ok-soft: #dcead6;
     --warn: #b08a1e;
-    --warn-soft: #f0e6c2;
     --miss: #a8a08c;
     --shadow: rgba(33, 29, 22, 0.08);
   }
@@ -33,9 +31,7 @@
       --digital: #9c8bff;
       --fusion: #e069c9;
       --ok: #7fbf6f;
-      --ok-soft: #24371f;
       --warn: #d9b24a;
-      --warn-soft: #3a3118;
       --miss: #5c5568;
       --shadow: rgba(0, 0, 0, 0.35);
     }
@@ -48,13 +44,13 @@
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     line-height: 1.55;
   }
-  h1, h2 {
+  h1, h2, h3 {
     font-family: Iowan Old Style, "Palatino Linotype", Palatino, Georgia, serif;
     text-wrap: balance;
   }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 48px 20px 96px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 96px; }
 
-  header { text-align: center; margin-bottom: 48px; }
+  header { text-align: center; margin-bottom: 20px; }
   header .kicker {
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 0.75rem;
@@ -62,23 +58,54 @@
     text-transform: uppercase;
     color: var(--ink-muted);
   }
-  header h1 { font-size: clamp(2rem, 6vw, 3rem); margin: 10px 0 8px; }
+  header h1 { font-size: clamp(2rem, 6vw, 2.8rem); margin: 8px 0 4px; }
   header h1 .grad {
     background: linear-gradient(92deg, var(--classic), var(--fusion), var(--digital));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
-  header p { color: var(--ink-muted); max-width: 520px; margin: 0 auto; }
+  header .today-line { color: var(--ink-muted); font-size: 0.95rem; margin: 0; }
+  header .today-line b { color: var(--ink); }
+
+  .hud {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 18px 0 8px;
+  }
+  .hud .stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .hud .stat small { font-weight: 400; color: var(--ink-muted); }
+  .reward-note {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--fusion);
+    font-weight: 600;
+    min-height: 1.4em;
+    margin: 4px 0 24px;
+  }
 
   .game {
     background: var(--card-bg);
     border: 1px solid var(--line);
     border-radius: 16px;
     padding: 26px 24px 28px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
     box-shadow: 0 2px 10px var(--shadow);
   }
+  .game.done { border-color: var(--ok); }
   .game .cat {
     display: inline-block;
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
@@ -108,6 +135,8 @@
   }
   button:focus-visible, input:focus-visible { outline: 3px solid var(--digital); outline-offset: 2px; }
   button.secondary { background: transparent; color: var(--ink); }
+  button.tip { background: transparent; color: var(--warn); border-color: var(--warn); }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
   input[type="text"] {
     font: inherit;
     padding: 9px 12px;
@@ -120,6 +149,7 @@
   .msg { font-size: 0.92rem; margin-top: 12px; min-height: 1.4em; }
   .msg.ok { color: var(--ok); font-weight: 600; }
   .msg.err { color: var(--fusion); }
+  .msg.tipmsg { color: var(--warn); font-weight: 600; }
 
   .fakt {
     display: none;
@@ -132,6 +162,9 @@
   }
   .fakt.show { display: block; }
   .fakt b { color: var(--classic); }
+  .sharebar { display: none; margin-top: 14px; }
+  .sharebar.show { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .sharebar .copied { color: var(--ok); font-size: 0.85rem; font-weight: 600; }
 
   /* Wortle */
   .board { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
@@ -153,10 +186,7 @@
 
   /* Zahlenschloss */
   .hints { margin: 0 0 18px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .hints li {
-    display: flex; align-items: center; gap: 14px;
-    font-size: 0.93rem;
-  }
+  .hints li { display: flex; align-items: center; gap: 14px; font-size: 0.93rem; }
   .hints .code {
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-weight: 700; font-size: 1.05rem;
@@ -180,12 +210,7 @@
   }
 
   /* Schiebepuzzle */
-  .slide-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 72px);
-    gap: 6px;
-    margin-bottom: 14px;
-  }
+  .slide-grid { display: grid; grid-template-columns: repeat(3, 72px); gap: 6px; margin-bottom: 14px; }
   .slide-tile {
     width: 72px; height: 72px;
     display: flex; align-items: center; justify-content: center;
@@ -214,6 +239,84 @@
   }
   .chest { font-size: 2.2rem; margin-right: 6px; vertical-align: middle; }
 
+  /* Profil */
+  .profile {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 26px 24px;
+    margin-top: 8px;
+  }
+  .profile h2 { margin: 0 0 4px; font-size: 1.35rem; }
+  .profile .sub { color: var(--ink-muted); font-size: 0.9rem; margin: 0 0 20px; }
+  .bar-row { display: grid; grid-template-columns: 150px 1fr 46px; gap: 12px; align-items: center; margin-bottom: 10px; font-size: 0.92rem; }
+  @media (max-width: 520px) { .bar-row { grid-template-columns: 110px 1fr 42px; } }
+  .bar-row .lbl { font-weight: 600; }
+  .bar-row .lbl .strong-mark { font-size: 0.9em; }
+  .track { height: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--classic), var(--fusion)); }
+  .bar-row .val { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-muted); }
+  .rq-box {
+    margin-top: 20px;
+    padding: 16px 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    text-align: center;
+  }
+  .rq-box .rq-value { font-family: Iowan Old Style, Palatino, Georgia, serif; font-size: 2.2rem; font-weight: 700; color: var(--digital); }
+  .rq-box .rq-label { font-size: 0.85rem; color: var(--ink-muted); }
+  .rq-box .disclaimer { font-size: 0.75rem; color: var(--ink-muted); margin-top: 8px; font-style: italic; }
+
+  /* Rangliste */
+  .rank-table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+  .rank-table th, .rank-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .rank-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); font-weight: 600; }
+  .rank-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .rank-table tr.me td { font-weight: 700; color: var(--digital); }
+  .rank-table td.medal { width: 34px; }
+
+  /* Login-Overlay */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 17, 12, 0.55);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .login-card {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 30px 28px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  }
+  .login-card h2 { margin: 0 0 8px; font-size: 1.5rem; }
+  .login-card p { color: var(--ink-muted); font-size: 0.95rem; margin: 0 0 18px; }
+  .known { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .known button {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+  }
+  .player-line { text-align: center; color: var(--ink-muted); font-size: 0.9rem; margin: 10px 0 0; }
+  .player-line b { color: var(--ink); }
+  .player-line button {
+    font-size: 0.78rem;
+    padding: 4px 12px;
+    margin-left: 8px;
+    background: transparent;
+    color: var(--ink-muted);
+  }
+
   footer { text-align: center; color: var(--ink-muted); font-size: 0.85rem; margin-top: 40px; }
 </style>
 </head>
@@ -221,88 +324,329 @@
 <div class="wrap">
 
   <header>
-    <div class="kicker">Prototyp · vier Kategorien</div>
+    <div class="kicker">Vier Rätsel am Tag · Eine Serie</div>
     <h1>Super<span class="grad">Rätsel</span></h1>
-    <p>Je ein spielbares Beispiel pro Kategorie — mit Herkunfts-Fakt nach jeder Lösung, wie im Core Loop vorgesehen.</p>
+    <p class="today-line" id="todayLine"></p>
+    <p class="player-line">Spieler: <b id="playerName">—</b><button id="switchBtn" type="button">Wechseln</button></p>
   </header>
 
-  <!-- 1 · WORT -->
-  <section class="game" aria-labelledby="wort-h">
-    <span class="cat wort">Kategorie 1 · Wort</span>
-    <h2 id="wort-h">Wortle</h2>
-    <p class="intro">Errate das deutsche Wort mit 5 Buchstaben in 6 Versuchen. Grün = richtiger Buchstabe am richtigen Platz, Gelb = richtiger Buchstabe am falschen Platz.</p>
-    <div class="board" id="wortBoard"></div>
+  <div class="hud">
+    <span class="stat" title="Aktuelle Serie">🔥 <span id="hudStreak">0</span> <small>Serie</small></span>
+    <span class="stat" title="Freeze-Token retten die Serie bei verpassten Tagen">🧊 <span id="hudFreeze">0</span> <small>Freeze</small></span>
+    <span class="stat" title="Tipp-Token geben dir einen Hinweis im Rätsel">💡 <span id="hudTips">0</span> <small>Tipps</small></span>
+    <span class="stat" title="Heute gelöste Rätsel">✅ <span id="hudToday">0</span>/4 <small>heute</small></span>
+  </div>
+  <p class="reward-note" id="rewardNote"></p>
+
+  <div id="gameList"></div>
+
+  <section class="profile" aria-labelledby="profil-h">
+    <h2 id="profil-h">Dein Stärken-Profil</h2>
+    <p class="sub">Durchschnittliche Lösungsqualität pro Kategorie (0–100). Je länger du dabei bist, desto genauer wird das Bild.</p>
+    <div id="profileBars"></div>
+    <div class="rq-box">
+      <div class="rq-value" id="rqValue">—</div>
+      <div class="rq-label" id="rqLabel">RQ · Rätsel-Quotient</div>
+      <div class="disclaimer">Spielerische Schätzung auf Basis deiner Lösungsqualität — kein wissenschaftlicher IQ-Test. Ab 5 gelösten Rätseln.</div>
+    </div>
+  </section>
+
+  <section class="profile" aria-labelledby="rank-h" style="margin-top: 24px;">
+    <h2 id="rank-h">Rangliste</h2>
+    <p class="sub">Alle Rätsler:innen auf diesem Gerät, sortiert nach Gesamtpunkten. Punkte gibt es für jede Lösung — je weniger Versuche, desto mehr.</p>
+    <table class="rank-table">
+      <thead><tr><th></th><th>Name</th><th style="text-align:right">Punkte</th><th style="text-align:right">🔥 Serie</th><th style="text-align:right">Gelöst</th></tr></thead>
+      <tbody id="rankBody"></tbody>
+    </table>
+  </section>
+
+  <footer>SuperRätsel · Prototyp — Inhalte rotieren täglich, Fortschritt wird lokal im Browser gespeichert.</footer>
+
+</div>
+
+<div class="overlay" id="loginOverlay" role="dialog" aria-modal="true" aria-labelledby="login-h">
+  <div class="login-card">
+    <h2 id="login-h">Wer rätselt heute?</h2>
+    <p>Gib deinen Namen ein — dein Fortschritt wird gespeichert und du landest in der Rangliste.</p>
     <div class="controls">
-      <input type="text" id="wortInput" maxlength="5" placeholder="?????" aria-label="Wort mit 5 Buchstaben">
-      <button id="wortBtn">Raten</button>
+      <input type="text" id="loginInput" maxlength="20" placeholder="Dein Name" aria-label="Dein Name">
+      <button id="loginBtn">Los geht's</button>
     </div>
-    <p class="msg" id="wortMsg"></p>
-    <div class="fakt" id="wortFakt"><b>Herkunfts-Fakt:</b> Wordle wurde 2021 von Josh Wardle als Geschenk für seine Partnerin gebaut. Das Prinzip „nur ein Rätsel pro Tag, alle lösen dasselbe Wort“ machte es zum viralen Phänomen — die New York Times kaufte es für einen siebenstelligen Betrag.</div>
-  </section>
-
-  <!-- 2 · LOGIK -->
-  <section class="game" aria-labelledby="logik-h">
-    <span class="cat logik">Kategorie 2 · Logik &amp; Zahl</span>
-    <h2 id="logik-h">Das Zahlenschloss</h2>
-    <p class="intro">Ein Schloss mit drei Ziffern. Fünf Fehlversuche liegen daneben — jede Notiz verrät etwas. Knacke den Code.</p>
-    <ul class="hints">
-      <li><span class="code">6 8 2</span> Eine Ziffer ist richtig und steht an der richtigen Stelle.</li>
-      <li><span class="code">6 1 4</span> Eine Ziffer ist richtig, steht aber an der falschen Stelle.</li>
-      <li><span class="code">2 0 6</span> Zwei Ziffern sind richtig, beide an der falschen Stelle.</li>
-      <li><span class="code">7 3 8</span> Keine Ziffer ist richtig.</li>
-      <li><span class="code">3 8 0</span> Eine Ziffer ist richtig, steht aber an der falschen Stelle.</li>
-    </ul>
-    <div class="lock-controls">
-      <input class="digit" id="d1" maxlength="1" inputmode="numeric" aria-label="Erste Ziffer">
-      <input class="digit" id="d2" maxlength="1" inputmode="numeric" aria-label="Zweite Ziffer">
-      <input class="digit" id="d3" maxlength="1" inputmode="numeric" aria-label="Dritte Ziffer">
-      <button id="lockBtn">Öffnen</button>
-    </div>
-    <p class="msg" id="lockMsg"></p>
-    <div class="fakt" id="lockFakt"><b>Herkunfts-Fakt:</b> Dieses Rätsel gehört zur Familie der Deduktionsspiele wie „Mastermind“ (1970) — dessen Urahn „Bulls and Cows“ schon lange davor mit Papier und Stift gespielt wurde. Aus wenigen Hinweisen das Ganze erschließen: das Grundprinzip jeder Logik-Deduktion.</div>
-  </section>
-
-  <!-- 3 · VISUELL -->
-  <section class="game" aria-labelledby="visuell-h">
-    <span class="cat visuell">Kategorie 3 · Visuell &amp; Räumlich</span>
-    <h2 id="visuell-h">Das Schiebepuzzle</h2>
-    <p class="intro">Bringe die Zahlen 1–8 in die richtige Reihenfolge. Tippe ein Feld neben der Lücke, um es zu verschieben.</p>
-    <div class="slide-meta">Züge: <b id="moveCount">0</b></div>
-    <div class="slide-grid" id="slideGrid" role="group" aria-label="Schiebepuzzle 3 mal 3"></div>
-    <button class="secondary" id="shuffleBtn">Neu mischen</button>
-    <p class="msg" id="slideMsg"></p>
-    <div class="fakt" id="slideFakt"><b>Herkunfts-Fakt:</b> Das 15-Puzzle löste in den 1880ern die erste dokumentierte Puzzle-Massenhysterie aus — Sam Loyd lobte 1.000 Dollar für eine unlösbare Stellung aus (er wusste: mathematisch unmöglich). Der direkte Vorfahr von Rubik's Cube und jedem Schiebe-Game auf dem Smartphone.</div>
-  </section>
-
-  <!-- 4 · ESCAPE -->
-  <section class="game" aria-labelledby="escape-h">
-    <span class="cat escape">Kategorie 4 · Escape-Room-Stil</span>
-    <h2 id="escape-h">Die verschlossene Truhe</h2>
-    <p class="intro"><span class="chest">🧰</span>Vor dir steht eine Truhe. Auf dem Deckel klebt ein Zettel — die Antwort auf das Rätsel ist das Losungswort.</p>
-    <p class="riddle">„Ich habe Städte, aber keine Häuser.<br>Ich habe Wälder, aber keine Bäume.<br>Ich habe Flüsse, aber kein Wasser.<br>Was bin ich?“</p>
-    <div class="controls">
-      <input type="text" id="escapeInput" placeholder="Losungswort …" aria-label="Losungswort">
-      <button id="escapeBtn">Truhe öffnen</button>
-    </div>
-    <p class="msg" id="escapeMsg"></p>
-    <div class="fakt" id="escapeFakt"><b>Herkunfts-Fakt:</b> Das „Was bin ich?“-Format ist über 2.500 Jahre alt — schon das Rätsel der Sphinx vor Theben folgte ihm. Moderne Escape Rooms (im Schnitt 10–12 Rätsel pro Raum) sind seine direkte Fortsetzung: Wissen als Schlüssel, der eine Tür öffnet.</div>
-  </section>
-
-  <footer>SuperRätsel · Prototyp — je ein Beispiel pro Kategorie. Täglich rotierende Kategorie, Streaks &amp; teilbare Ergebnisse folgen im nächsten Schritt.</footer>
-
+    <div class="known" id="knownPlayers"></div>
+  </div>
 </div>
 
 <script>
 (function () {
   "use strict";
 
-  /* ---------- 1 · Wortle ---------- */
-  var WORT = "KRAFT";
+  /* ===== Tag ===== */
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var dayIndex = Math.round(today.getTime() / 86400000);
+  // Test-Modus: ?tag=1 simuliert morgen, ?tag=-1 gestern usw.
+  var params = new URLSearchParams(location.search);
+  if (params.has("tag")) dayIndex += parseInt(params.get("tag"), 10) || 0;
+  var puzzleNo = dayIndex - 20000;
+
+  var CATS = [
+    { id: "wort",    name: "Wort" },
+    { id: "logik",   name: "Logik & Zahl" },
+    { id: "visuell", name: "Visuell & Räumlich" },
+    { id: "escape",  name: "Escape-Room" }
+  ];
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  /* ===== Spielstand: mehrere Spieler:innen pro Gerät ===== */
+  var STORE = "superraetsel_v3";
+  var DB;
+  try { DB = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { DB = {}; }
+  DB.players = DB.players || {};
+  DB.current = DB.current || null;
+  var S = null;
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(DB)); } catch (e) {} }
+
+  function bindPlayer(name) {
+    name = String(name || "").trim().slice(0, 20);
+    if (!name) return false;
+    if (!DB.players[name]) {
+      DB.players[name] = {
+        streak: 0, lastDay: null,
+        freezes: 1, tips: 1,          // Startgeschenke
+        points: 0, solvedTotal: 0,
+        stats: {},                    // je Kategorie: { n, sum }
+        daySolved: { day: dayIndex, cats: [] }
+      };
+    }
+    DB.current = name;
+    S = DB.players[name];
+    if (!S.daySolved || S.daySolved.day !== dayIndex) S.daySolved = { day: dayIndex, cats: [] };
+    if (typeof S.points !== "number") S.points = 0;
+    if (typeof S.solvedTotal !== "number") S.solvedTotal = 0;
+    // Serie geplatzt? (Lücke größer als vorhandene Freezes)
+    if (S.lastDay !== null && S.lastDay < dayIndex - 1) {
+      var gapCheck = dayIndex - S.lastDay - 1;
+      if (gapCheck > S.freezes) S.streak = 0;
+    }
+    document.getElementById("playerName").textContent = name;
+    save();
+    return true;
+  }
+
+  var hudStreak = document.getElementById("hudStreak");
+  var hudFreeze = document.getElementById("hudFreeze");
+  var hudTips = document.getElementById("hudTips");
+  var hudToday = document.getElementById("hudToday");
+  var rewardNote = document.getElementById("rewardNote");
+
+  function renderHud() {
+    if (!S) return;
+    hudStreak.textContent = S.streak;
+    hudFreeze.textContent = S.freezes;
+    hudTips.textContent = S.tips;
+    hudToday.textContent = S.daySolved.cats.length;
+    save();
+  }
+
+  function renderRanking() {
+    var tb = document.getElementById("rankBody");
+    tb.innerHTML = "";
+    var rows = Object.keys(DB.players).map(function (n) {
+      var p = DB.players[n];
+      return { name: n, points: p.points || 0, streak: p.streak || 0, solved: p.solvedTotal || 0 };
+    }).sort(function (a, b) { return b.points - a.points || b.solved - a.solved; });
+    rows.forEach(function (row, i) {
+      var tr = document.createElement("tr");
+      if (row.name === DB.current) tr.className = "me";
+      var medal = document.createElement("td");
+      medal.className = "medal";
+      medal.textContent = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : (i + 1) + ".";
+      var name = document.createElement("td");
+      name.textContent = row.name; // textContent: Nutzereingaben nie als HTML einsetzen
+      var pts = document.createElement("td");
+      pts.className = "num";
+      pts.textContent = row.points;
+      var st = document.createElement("td");
+      st.className = "num";
+      st.textContent = row.streak;
+      var sv = document.createElement("td");
+      sv.className = "num";
+      sv.textContent = row.solved;
+      tr.appendChild(medal); tr.appendChild(name); tr.appendChild(pts); tr.appendChild(st); tr.appendChild(sv);
+      tb.appendChild(tr);
+    });
+  }
+
+  function renderProfile() {
+    if (!S) return;
+    var box = document.getElementById("profileBars");
+    box.innerHTML = "";
+    var best = -1, bestAvg = -1, totalN = 0, sumAvg = 0, catCount = 0;
+    CATS.forEach(function (c, i) {
+      var st = S.stats[i];
+      if (st && st.n > 0) {
+        var avg = st.sum / st.n;
+        totalN += st.n; sumAvg += avg; catCount++;
+        if (avg > bestAvg) { bestAvg = avg; best = i; }
+      }
+    });
+    CATS.forEach(function (c, i) {
+      var st = S.stats[i];
+      var avg = (st && st.n > 0) ? Math.round(st.sum / st.n) : null;
+      var row = document.createElement("div");
+      row.className = "bar-row";
+      var lbl = document.createElement("span");
+      lbl.className = "lbl";
+      lbl.textContent = c.name + (i === best && catCount > 1 ? " " : "");
+      if (i === best && catCount > 1) {
+        var mark = document.createElement("span");
+        mark.className = "strong-mark";
+        mark.textContent = "💪";
+        mark.title = "Deine Stärke";
+        lbl.appendChild(mark);
+      }
+      var track = document.createElement("div");
+      track.className = "track";
+      var fill = document.createElement("div");
+      fill.className = "fill";
+      fill.style.width = (avg === null ? 0 : avg) + "%";
+      track.appendChild(fill);
+      var val = document.createElement("span");
+      val.className = "val";
+      val.textContent = avg === null ? "—" : avg;
+      row.appendChild(lbl); row.appendChild(track); row.appendChild(val);
+      box.appendChild(row);
+    });
+    var rqValue = document.getElementById("rqValue");
+    var rqLabel = document.getElementById("rqLabel");
+    if (totalN >= 5 && catCount > 0) {
+      var overall = sumAvg / catCount;
+      var rq = Math.round(80 + 0.55 * overall);
+      rqValue.textContent = "RQ " + rq;
+      rqLabel.textContent = "Rätsel-Quotient · basiert auf " + totalN + " gelösten Rätseln";
+    } else {
+      rqValue.textContent = "—";
+      rqLabel.textContent = "RQ · noch " + Math.max(0, 5 - totalN) + " Rätsel bis zur ersten Schätzung";
+    }
+  }
+
+  var lastResult = { text: null };
+
+  function registerSolve(catIdx, resultLine, score) {
+    if (!S) return;
+    score = clamp(Math.round(score), 0, 100);
+    if (!S.stats[catIdx]) S.stats[catIdx] = { n: 0, sum: 0 };
+    S.stats[catIdx].n++;
+    S.stats[catIdx].sum += score;
+    S.points += score;
+    S.solvedTotal++;
+
+    var notes = [];
+    var firstToday = S.daySolved.cats.length === 0;
+    if (S.daySolved.cats.indexOf(catIdx) === -1) S.daySolved.cats.push(catIdx);
+
+    if (firstToday && S.lastDay !== dayIndex) {
+      if (S.lastDay === null) {
+        S.streak = 1;
+      } else if (S.lastDay === dayIndex - 1) {
+        S.streak++;
+      } else {
+        var gap = dayIndex - S.lastDay - 1;
+        if (gap > 0 && gap <= S.freezes) {
+          S.freezes -= gap;
+          S.streak++;
+          notes.push("🧊 " + gap + " Freeze-Token " + (gap === 1 ? "hat" : "haben") + " deine Serie gerettet!");
+        } else {
+          S.streak = 1;
+        }
+      }
+      S.lastDay = dayIndex;
+      if (S.streak % 3 === 0) { S.tips = Math.min(S.tips + 1, 9); notes.push("+1 💡 Tipp-Token (" + S.streak + "er-Serie)"); }
+      if (S.streak % 7 === 0 && S.freezes < 3) { S.freezes++; notes.push("+1 🧊 Freeze-Token (" + S.streak + "er-Serie)"); }
+      if (S.streak === 7 || S.streak === 30 || S.streak === 100) notes.push("🏅 Meilenstein: " + S.streak + "-Tage-Serie!");
+    }
+    if (S.daySolved.cats.length === 4) {
+      S.tips = Math.min(S.tips + 1, 9);
+      notes.push("🌟 Perfekter Tag — alle 4 gelöst! +1 💡 Tipp-Token");
+    }
+
+    lastResult.text = "🧩 SuperRätsel #" + puzzleNo + " · " + DB.current + " · " + CATS[catIdx].name +
+      (resultLine ? " · " + resultLine : "") + " · 🔥 " + S.streak + "er-Serie · " +
+      S.daySolved.cats.length + "/4 heute";
+
+    if (notes.length) rewardNote.textContent = notes.join("  ·  ");
+    renderHud();
+    renderProfile();
+    renderRanking();
+  }
+
+  function useTip() {
+    if (!S || S.tips < 1) return false;
+    S.tips--;
+    renderHud();
+    return true;
+  }
+
+  document.getElementById("todayLine").innerHTML =
+    "Tagesausgabe <b>#" + puzzleNo + "</b> · Alle vier Kategorien warten auf dich";
+
+  /* ===== Teilen ===== */
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-share]");
+    if (!btn || !lastResult.text) return;
+    var note = btn.parentElement.querySelector(".copied");
+    function done() { note.textContent = "Kopiert!"; setTimeout(function () { note.textContent = ""; }, 2000); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(lastResult.text).then(done, done);
+    } else { done(); }
+  });
+
+  var list = document.getElementById("gameList");
+  function section(html) {
+    var div = document.createElement("div");
+    div.innerHTML = html;
+    var sec = div.firstElementChild;
+    list.appendChild(sec);
+    return sec;
+  }
+
+  /* ===== 1 · Wortle ===== */
+  var wortSec = section(
+    '<section class="game" aria-labelledby="wort-h">' +
+    '<span class="cat wort">Wort</span>' +
+    '<h2 id="wort-h">Wortle</h2>' +
+    '<p class="intro">Errate das deutsche Wort mit 5 Buchstaben in 6 Versuchen. Grün = richtiger Buchstabe am richtigen Platz, Gelb = richtiger Buchstabe am falschen Platz.</p>' +
+    '<div class="board" id="wortBoard"></div>' +
+    '<div class="controls">' +
+    '<input type="text" id="wortInput" maxlength="5" placeholder="?????" aria-label="Wort mit 5 Buchstaben">' +
+    '<button id="wortBtn">Raten</button>' +
+    '<button class="tip" id="wortTip">💡 Tipp</button>' +
+    '</div>' +
+    '<p class="msg" id="wortMsg"></p>' +
+    '<div class="fakt" id="wortFakt"><b>Herkunfts-Fakt:</b> Wordle wurde 2021 von Josh Wardle als Geschenk für seine Partnerin gebaut. Das Prinzip „nur ein Rätsel pro Tag, alle lösen dasselbe Wort“ machte es zum viralen Phänomen — die New York Times kaufte es für einen siebenstelligen Betrag.</div>' +
+    '<div class="sharebar" id="wortShare"><button class="secondary" data-share>Ergebnis kopieren</button><span class="copied"></span></div>' +
+    '</section>'
+  );
+  var WORDS = ["KRAFT","TRAUM","BLITZ","WOLKE","FEUER","STERN","LICHT","MAGIE","TISCH","BLUME",
+               "VOGEL","PFERD","MAUER","BRIEF","KNOPF","REGEN","INSEL","FLUSS","NACHT","GLANZ",
+               "STOLZ","MUTIG","KLANG","PERLE","SEGEL"];
+  var WORT = WORDS[((dayIndex % WORDS.length) + WORDS.length) % WORDS.length];
   var MAX_TRIES = 6;
   var tries = 0, solved = false;
-  var board = document.getElementById("wortBoard");
-  var input = document.getElementById("wortInput");
-  var wortMsg = document.getElementById("wortMsg");
+  var board = wortSec.querySelector("#wortBoard");
+  var input = wortSec.querySelector("#wortInput");
+  var wortMsg = wortSec.querySelector("#wortMsg");
+  var knownGreens = [false, false, false, false, false];
+  var emojiRows = [];
 
   for (var r = 0; r < MAX_TRIES; r++) {
     var row = document.createElement("div");
@@ -327,26 +671,30 @@
     var rowTiles = board.children[tries].children;
     var target = WORT.split("");
     var status = ["miss", "miss", "miss", "miss", "miss"];
-    for (var i = 0; i < 5; i++) {
-      if (g[i] === target[i]) { status[i] = "hit"; target[i] = null; }
-    }
+    for (var i = 0; i < 5; i++) if (g[i] === target[i]) { status[i] = "hit"; target[i] = null; knownGreens[i] = true; }
     for (var j = 0; j < 5; j++) {
       if (status[j] === "miss") {
         var idx = target.indexOf(g[j]);
         if (idx !== -1) { status[j] = "near"; target[idx] = null; }
       }
     }
+    var emo = "";
     for (var k = 0; k < 5; k++) {
       rowTiles[k].textContent = g[k];
       rowTiles[k].classList.add(status[k]);
+      emo += status[k] === "hit" ? "🟩" : status[k] === "near" ? "🟨" : "⬜";
     }
+    emojiRows.push(emo);
     tries++;
     input.value = "";
     if (g === WORT) {
       solved = true;
+      wortSec.classList.add("done");
       wortMsg.textContent = "Gelöst in " + tries + (tries === 1 ? " Versuch!" : " Versuchen!");
       wortMsg.className = "msg ok";
-      document.getElementById("wortFakt").classList.add("show");
+      wortSec.querySelector("#wortFakt").classList.add("show");
+      registerSolve(0, tries + "/6", [100, 85, 70, 55, 40, 25][tries - 1]);
+      wortSec.querySelector("#wortShare").classList.add("show");
     } else if (tries >= MAX_TRIES) {
       wortMsg.textContent = "Das Wort war: " + WORT + ". Morgen gibt's ein neues!";
       wortMsg.className = "msg err";
@@ -355,13 +703,102 @@
       wortMsg.className = "msg";
     }
   }
-  document.getElementById("wortBtn").addEventListener("click", guessWort);
+  wortSec.querySelector("#wortBtn").addEventListener("click", guessWort);
   input.addEventListener("keydown", function (e) { if (e.key === "Enter") guessWort(); });
+  wortSec.querySelector("#wortTip").addEventListener("click", function () {
+    if (solved || tries >= MAX_TRIES) return;
+    var pos = knownGreens.indexOf(false);
+    if (pos === -1) return;
+    if (!useTip()) { wortMsg.textContent = "Kein Tipp-Token — halte deine Serie, um welche zu verdienen."; wortMsg.className = "msg err"; return; }
+    knownGreens[pos] = true;
+    wortMsg.textContent = "💡 Buchstabe " + (pos + 1) + " ist „" + WORT[pos] + "“.";
+    wortMsg.className = "msg tipmsg";
+  });
 
-  /* ---------- 2 · Zahlenschloss ---------- */
-  var CODE = "042";
-  var lockMsg = document.getElementById("lockMsg");
-  var digits = [document.getElementById("d1"), document.getElementById("d2"), document.getElementById("d3")];
+  /* ===== 2 · Zahlenschloss ===== */
+  var logikSec = section(
+    '<section class="game" aria-labelledby="logik-h">' +
+    '<span class="cat logik">Logik &amp; Zahl</span>' +
+    '<h2 id="logik-h">Das Zahlenschloss</h2>' +
+    '<p class="intro">Ein Schloss mit drei Ziffern. Die Fehlversuche daneben verraten etwas — knacke den Tages-Code. Er wird jeden Tag neu erzeugt und ist immer eindeutig lösbar.</p>' +
+    '<ul class="hints" id="lockHints"></ul>' +
+    '<div class="lock-controls">' +
+    '<input class="digit" id="d1" maxlength="1" inputmode="numeric" aria-label="Erste Ziffer">' +
+    '<input class="digit" id="d2" maxlength="1" inputmode="numeric" aria-label="Zweite Ziffer">' +
+    '<input class="digit" id="d3" maxlength="1" inputmode="numeric" aria-label="Dritte Ziffer">' +
+    '<button id="lockBtn">Öffnen</button>' +
+    '<button class="tip" id="lockTip">💡 Tipp</button>' +
+    '</div>' +
+    '<p class="msg" id="lockMsg"></p>' +
+    '<div class="fakt" id="lockFakt"><b>Herkunfts-Fakt:</b> Dieses Rätsel gehört zur Familie der Deduktionsspiele wie „Mastermind“ (1970) — dessen Urahn „Bulls and Cows“ schon lange davor mit Papier und Stift gespielt wurde. Aus wenigen Hinweisen das Ganze erschließen: das Grundprinzip jeder Logik-Deduktion.</div>' +
+    '<div class="sharebar" id="lockShare"><button class="secondary" data-share>Ergebnis kopieren</button><span class="copied"></span></div>' +
+    '</section>'
+  );
+  function lockFeedback(code, att) {
+    var a = 0, b = 0, cRest = [], gRest = [];
+    for (var i = 0; i < 3; i++) {
+      if (code[i] === att[i]) a++;
+      else { cRest.push(code[i]); gRest.push(att[i]); }
+    }
+    gRest.forEach(function (d) {
+      var ix = cRest.indexOf(d);
+      if (ix !== -1) { b++; cRest.splice(ix, 1); }
+    });
+    return [a, b];
+  }
+  function describe(fb) {
+    var a = fb[0], b = fb[1], parts = [];
+    if (a === 0 && b === 0) return "Keine Ziffer ist richtig.";
+    if (a > 0) parts.push((a === 1 ? "Eine Ziffer ist" : a + " Ziffern sind") + " richtig und an der richtigen Stelle");
+    if (b > 0) parts.push((b === 1 ? (a > 0 ? "eine weitere ist" : "Eine Ziffer ist") : (a > 0 ? b + " weitere sind" : b + " Ziffern sind")) + " richtig, aber an der falschen Stelle");
+    return parts.join("; ") + ".";
+  }
+  function genLock(seed) {
+    for (var sub = 0; sub < 200; sub++) {
+      var rng = mulberry32(seed * 977 + sub * 131 + 7);
+      var code = [Math.floor(rng() * 10), Math.floor(rng() * 10), Math.floor(rng() * 10)];
+      var attempts = [], guard = 0;
+      while (attempts.length < 5 && guard++ < 200) {
+        var att = [Math.floor(rng() * 10), Math.floor(rng() * 10), Math.floor(rng() * 10)];
+        if (att.join("") === code.join("")) continue;
+        if (attempts.some(function (x) { return x.join("") === att.join(""); })) continue;
+        attempts.push(att);
+      }
+      if (attempts.length < 5) continue;
+      var fbs = attempts.map(function (att) { return lockFeedback(code, att); });
+      if (fbs.some(function (fb) { return fb[0] >= 2; })) continue;
+      var matches = 0;
+      for (var n = 0; n < 1000; n++) {
+        var cand = [Math.floor(n / 100), Math.floor(n / 10) % 10, n % 10];
+        var okAll = true;
+        for (var q = 0; q < 5; q++) {
+          var fb = lockFeedback(cand, attempts[q]);
+          if (fb[0] !== fbs[q][0] || fb[1] !== fbs[q][1]) { okAll = false; break; }
+        }
+        if (okAll && ++matches > 1) break;
+      }
+      if (matches === 1) return { code: code.join(""), attempts: attempts, fbs: fbs };
+    }
+    return {
+      code: "042",
+      attempts: [[6,8,2],[6,1,4],[2,0,6],[7,3,8],[3,8,0]],
+      fbs: [[1,0],[0,1],[0,2],[0,0],[0,1]]
+    };
+  }
+  var LOCK = genLock(dayIndex);
+  var hintsUl = logikSec.querySelector("#lockHints");
+  LOCK.attempts.forEach(function (att, i) {
+    var li = document.createElement("li");
+    var span = document.createElement("span");
+    span.className = "code";
+    span.textContent = att.join(" ");
+    li.appendChild(span);
+    li.appendChild(document.createTextNode(describe(LOCK.fbs[i])));
+    hintsUl.appendChild(li);
+  });
+  var lockMsg = logikSec.querySelector("#lockMsg");
+  var digits = [logikSec.querySelector("#d1"), logikSec.querySelector("#d2"), logikSec.querySelector("#d3")];
+  var lockTries = 0, lockSolved = false, lockRevealed = 0;
   digits.forEach(function (d, i) {
     d.addEventListener("input", function () {
       d.value = d.value.replace(/\D/g, "").slice(0, 1);
@@ -370,32 +807,57 @@
     d.addEventListener("keydown", function (e) { if (e.key === "Enter") tryLock(); });
   });
   function tryLock() {
+    if (lockSolved) return;
     var attempt = digits.map(function (d) { return d.value; }).join("");
     if (attempt.length < 3) {
       lockMsg.textContent = "Alle drei Ziffern eingeben.";
       lockMsg.className = "msg err";
       return;
     }
-    if (attempt === CODE) {
+    lockTries++;
+    if (attempt === LOCK.code) {
+      lockSolved = true;
+      logikSec.classList.add("done");
       lockMsg.textContent = "Klick! Das Schloss springt auf.";
       lockMsg.className = "msg ok";
-      document.getElementById("lockFakt").classList.add("show");
+      logikSec.querySelector("#lockFakt").classList.add("show");
+      registerSolve(1, lockTries + (lockTries === 1 ? " Versuch" : " Versuche"), Math.max(25, 100 - (lockTries - 1) * 15));
+      logikSec.querySelector("#lockShare").classList.add("show");
     } else {
       lockMsg.textContent = "Bleibt zu. Prüfe die Notizen noch einmal.";
       lockMsg.className = "msg err";
     }
   }
-  document.getElementById("lockBtn").addEventListener("click", tryLock);
+  logikSec.querySelector("#lockBtn").addEventListener("click", tryLock);
+  logikSec.querySelector("#lockTip").addEventListener("click", function () {
+    if (lockSolved || lockRevealed >= 2) return;
+    if (!useTip()) { lockMsg.textContent = "Kein Tipp-Token — halte deine Serie, um welche zu verdienen."; lockMsg.className = "msg err"; return; }
+    lockMsg.textContent = "💡 Ziffer " + (lockRevealed + 1) + " ist „" + LOCK.code[lockRevealed] + "“.";
+    lockMsg.className = "msg tipmsg";
+    lockRevealed++;
+  });
 
-  /* ---------- 3 · Schiebepuzzle ---------- */
-  var grid = document.getElementById("slideGrid");
-  var moveEl = document.getElementById("moveCount");
-  var slideMsg = document.getElementById("slideMsg");
-  var state, moves, slideSolved;
+  /* ===== 3 · Schiebepuzzle ===== */
+  var visSec = section(
+    '<section class="game" aria-labelledby="visuell-h">' +
+    '<span class="cat visuell">Visuell &amp; Räumlich</span>' +
+    '<h2 id="visuell-h">Das Schiebepuzzle</h2>' +
+    '<p class="intro">Bringe die Zahlen 1–8 in die richtige Reihenfolge. Tippe ein Feld neben der Lücke, um es zu verschieben. Alle bekommen heute dieselbe Startstellung.</p>' +
+    '<div class="slide-meta">Züge: <b id="moveCount">0</b></div>' +
+    '<div class="slide-grid" id="slideGrid" role="group" aria-label="Schiebepuzzle 3 mal 3"></div>' +
+    '<button class="secondary" id="resetBtn">Auf Tagesstellung zurücksetzen</button>' +
+    '<p class="msg" id="slideMsg"></p>' +
+    '<div class="fakt" id="slideFakt"><b>Herkunfts-Fakt:</b> Das 15-Puzzle löste in den 1880ern die erste dokumentierte Puzzle-Massenhysterie aus — Sam Loyd lobte 1.000 Dollar für eine unlösbare Stellung aus (er wusste: mathematisch unmöglich). Der direkte Vorfahr von Rubik\'s Cube und jedem Schiebe-Game auf dem Smartphone.</div>' +
+    '<div class="sharebar" id="slideShare"><button class="secondary" data-share>Ergebnis kopieren</button><span class="copied"></span></div>' +
+    '</section>'
+  );
+  var grid = visSec.querySelector("#slideGrid");
+  var moveEl = visSec.querySelector("#moveCount");
+  var slideMsg = visSec.querySelector("#slideMsg");
+  var state, moves, slideSolved, dailyStart;
 
-  function neighborsOfEmpty() {
-    var e = state.indexOf(0);
-    var out = [];
+  function neighborsOfEmpty(st) {
+    var e = st.indexOf(0), out = [];
     var row = Math.floor(e / 3), col = e % 3;
     if (row > 0) out.push(e - 3);
     if (row < 2) out.push(e + 3);
@@ -403,25 +865,31 @@
     if (col < 2) out.push(e + 1);
     return out;
   }
-  function shuffle() {
-    state = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+  function makeDailyStart() {
+    var rng = mulberry32(dayIndex * 31337 + 5);
+    var st = [1, 2, 3, 4, 5, 6, 7, 8, 0];
     do {
       var last = -1;
-      for (var s = 0; s < 60; s++) {
-        var opts = neighborsOfEmpty().filter(function (n) { return n !== last; });
-        var pick = opts[Math.floor(Math.random() * opts.length)];
-        last = state.indexOf(0);
-        state[last] = state[pick];
-        state[pick] = 0;
+      for (var s = 0; s < 80; s++) {
+        var opts = neighborsOfEmpty(st).filter(function (n) { return n !== last; });
+        var pick = opts[Math.floor(rng() * opts.length)];
+        last = st.indexOf(0);
+        st[last] = st[pick];
+        st[pick] = 0;
       }
-    } while (state.join(",") === "1,2,3,4,5,6,7,8,0");
+    } while (st.join(",") === "1,2,3,4,5,6,7,8,0");
+    return st;
+  }
+  dailyStart = makeDailyStart();
+  function resetSlide() {
+    state = dailyStart.slice();
     moves = 0;
     slideSolved = false;
     slideMsg.textContent = "";
     slideMsg.className = "msg";
-    render();
+    renderSlide();
   }
-  function render() {
+  function renderSlide() {
     moveEl.textContent = moves;
     grid.innerHTML = "";
     state.forEach(function (v, i) {
@@ -431,7 +899,7 @@
       if (v !== 0) {
         cell.textContent = v;
         cell.setAttribute("aria-label", "Feld " + v);
-        cell.addEventListener("click", function () { move(i); });
+        cell.addEventListener("click", function () { moveTile(i); });
       } else {
         cell.setAttribute("aria-label", "Leeres Feld");
         cell.disabled = true;
@@ -439,42 +907,127 @@
       grid.appendChild(cell);
     });
   }
-  function move(i) {
+  function moveTile(i) {
     if (slideSolved) return;
     var e = state.indexOf(0);
-    if (neighborsOfEmpty().indexOf(i) === -1) return;
+    if (neighborsOfEmpty(state).indexOf(i) === -1) return;
     state[e] = state[i];
     state[i] = 0;
     moves++;
-    render();
+    renderSlide();
     if (state.join(",") === "1,2,3,4,5,6,7,8,0") {
       slideSolved = true;
+      visSec.classList.add("done");
       slideMsg.textContent = "Gelöst in " + moves + " Zügen!";
       slideMsg.className = "msg ok";
-      document.getElementById("slideFakt").classList.add("show");
+      visSec.querySelector("#slideFakt").classList.add("show");
+      registerSolve(2, moves + " Züge", clamp(Math.round(2200 / moves), 25, 100));
+      visSec.querySelector("#slideShare").classList.add("show");
     }
   }
-  document.getElementById("shuffleBtn").addEventListener("click", shuffle);
-  shuffle();
+  visSec.querySelector("#resetBtn").addEventListener("click", resetSlide);
+  resetSlide();
 
-  /* ---------- 4 · Escape ---------- */
-  var ANSWERS = ["karte", "landkarte", "eine karte", "eine landkarte", "die karte", "die landkarte", "weltkarte"];
-  var escInput = document.getElementById("escapeInput");
-  var escMsg = document.getElementById("escapeMsg");
+  /* ===== 4 · Escape ===== */
+  var escSec = section(
+    '<section class="game" aria-labelledby="escape-h">' +
+    '<span class="cat escape">Escape-Room-Stil</span>' +
+    '<h2 id="escape-h">Die verschlossene Truhe</h2>' +
+    '<p class="intro"><span class="chest">🧰</span>Vor dir steht eine Truhe. Auf dem Deckel klebt ein Zettel — die Antwort auf das Rätsel ist das Losungswort.</p>' +
+    '<p class="riddle" id="riddleText"></p>' +
+    '<div class="controls">' +
+    '<input type="text" id="escapeInput" placeholder="Losungswort …" aria-label="Losungswort">' +
+    '<button id="escapeBtn">Truhe öffnen</button>' +
+    '<button class="tip" id="escapeTip">💡 Tipp</button>' +
+    '</div>' +
+    '<p class="msg" id="escapeMsg"></p>' +
+    '<div class="fakt" id="escapeFakt"><b>Herkunfts-Fakt:</b> Das „Was bin ich?“-Format ist über 2.500 Jahre alt — schon das Rätsel der Sphinx vor Theben folgte ihm. Moderne Escape Rooms (im Schnitt 10–12 Rätsel pro Raum) sind seine direkte Fortsetzung: Wissen als Schlüssel, der eine Tür öffnet.</div>' +
+    '<div class="sharebar" id="escapeShare"><button class="secondary" data-share>Ergebnis kopieren</button><span class="copied"></span></div>' +
+    '</section>'
+  );
+  var RIDDLES = [
+    { q: "„Ich habe Städte, aber keine Häuser.<br>Ich habe Wälder, aber keine Bäume.<br>Ich habe Flüsse, aber kein Wasser.<br>Was bin ich?“",
+      a: ["karte", "landkarte", "eine karte", "eine landkarte", "die karte", "die landkarte", "weltkarte"] },
+    { q: "„Je mehr du von mir wegnimmst,<br>desto größer werde ich.<br>Was bin ich?“",
+      a: ["loch", "ein loch", "das loch", "grube", "eine grube"] },
+    { q: "„Ich spreche ohne Mund<br>und höre ohne Ohren.<br>Ich habe keinen Körper,<br>aber der Wind erweckt mich zum Leben.<br>Was bin ich?“",
+      a: ["echo", "ein echo", "das echo"] },
+    { q: "„Es gehört dir,<br>doch andere benutzen es viel öfter als du.<br>Was ist es?“",
+      a: ["name", "mein name", "der name", "dein name"] },
+    { q: "„Ich bin immer vor dir,<br>und doch kannst du mich niemals sehen.<br>Was bin ich?“",
+      a: ["zukunft", "die zukunft"] },
+    { q: "„Was wird nasser,<br>je mehr es trocknet?“",
+      a: ["handtuch", "ein handtuch", "das handtuch", "tuch", "ein tuch"] }
+  ];
+  var RIDDLE = RIDDLES[((dayIndex % RIDDLES.length) + RIDDLES.length) % RIDDLES.length];
+  escSec.querySelector("#riddleText").innerHTML = RIDDLE.q;
+  var escInput = escSec.querySelector("#escapeInput");
+  var escMsg = escSec.querySelector("#escapeMsg");
+  var escTries = 0, escSolved = false;
   function tryEscape() {
+    if (escSolved) return;
     var a = escInput.value.trim().toLowerCase();
     if (!a) { escMsg.textContent = "Gib ein Losungswort ein."; escMsg.className = "msg err"; return; }
-    if (ANSWERS.indexOf(a) !== -1) {
+    escTries++;
+    if (RIDDLE.a.indexOf(a) !== -1) {
+      escSolved = true;
+      escSec.classList.add("done");
       escMsg.textContent = "Die Truhe schwingt auf — darin liegt der Schlüssel zum nächsten Raum!";
       escMsg.className = "msg ok";
-      document.getElementById("escapeFakt").classList.add("show");
+      escSec.querySelector("#escapeFakt").classList.add("show");
+      registerSolve(3, escTries + (escTries === 1 ? " Versuch" : " Versuche"), Math.max(25, 100 - (escTries - 1) * 20));
+      escSec.querySelector("#escapeShare").classList.add("show");
     } else {
       escMsg.textContent = "Die Truhe bleibt verschlossen. Lies das Rätsel noch einmal laut.";
       escMsg.className = "msg err";
     }
   }
-  document.getElementById("escapeBtn").addEventListener("click", tryEscape);
+  escSec.querySelector("#escapeBtn").addEventListener("click", tryEscape);
   escInput.addEventListener("keydown", function (e) { if (e.key === "Enter") tryEscape(); });
+  escSec.querySelector("#escapeTip").addEventListener("click", function () {
+    if (escSolved) return;
+    if (!useTip()) { escMsg.textContent = "Kein Tipp-Token — halte deine Serie, um welche zu verdienen."; escMsg.className = "msg err"; return; }
+    var w = RIDDLE.a[0];
+    escMsg.textContent = "💡 Das Losungswort beginnt mit „" + w[0].toUpperCase() + "“ und hat " + w.length + " Buchstaben.";
+    escMsg.className = "msg tipmsg";
+  });
+
+  /* ===== Login: Name eingeben, Fortschritt läuft unter diesem Namen ===== */
+  var overlay = document.getElementById("loginOverlay");
+  var loginInput = document.getElementById("loginInput");
+
+  function showLogin() {
+    var known = document.getElementById("knownPlayers");
+    known.innerHTML = "";
+    Object.keys(DB.players).forEach(function (n) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = n;
+      b.addEventListener("click", function () { completeLogin(n); });
+      known.appendChild(b);
+    });
+    overlay.style.display = "flex";
+    loginInput.value = "";
+    loginInput.focus();
+  }
+  function completeLogin(name) {
+    if (!bindPlayer(name)) return;
+    overlay.style.display = "none";
+    rewardNote.textContent = "";
+    renderHud();
+    renderProfile();
+    renderRanking();
+  }
+  document.getElementById("loginBtn").addEventListener("click", function () { completeLogin(loginInput.value); });
+  loginInput.addEventListener("keydown", function (e) { if (e.key === "Enter") completeLogin(loginInput.value); });
+  document.getElementById("switchBtn").addEventListener("click", showLogin);
+
+  if (DB.current && DB.players[DB.current]) {
+    completeLogin(DB.current);
+  } else {
+    renderRanking();
+    showLogin();
+  }
 })();
 </script>
 </body>
