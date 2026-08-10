@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saisonausblick – ehrlicher Langfristausblick für deinen Ort</title>
+<meta name="description" content="Zeigt echte Saisonprognose-Modelldaten (NOAA CFSv2) für jeden Ort, ordnet sie in die Klimatologie 1991–2020 ein, sucht vergleichbare Jahre in der Historie seit 1950 – und misst ehrlich nach, wie gut das Verfahren wirklich ist.">
+<style>
+  :root {
+    --bg: #e0e5ec;
+    --text: #38414f;
+    --text-soft: #6e7a8c;
+    --accent: #3b74bd;
+    --accent-2: #3567a8;
+    --accent-text: #2f6bb0;
+    --green: #1f7a4d;
+    --green-2: #196843;
+    --amber: #96660a;
+    --red: #b03a2e;
+    --warm: #c0562f;
+    --cold: #3f7fb5;
+    --sh-d: #b8c1d1;
+    --sh-l: #ffffff;
+    --raise: 9px 9px 18px var(--sh-d), -9px -9px 18px var(--sh-l);
+    --raise-sm: 5px 5px 10px var(--sh-d), -5px -5px 10px var(--sh-l);
+    --raise-xs: 3px 3px 6px var(--sh-d), -3px -3px 6px var(--sh-l);
+    --inset: inset 5px 5px 10px var(--sh-d), inset -5px -5px 10px var(--sh-l);
+    --inset-sm: inset 3px 3px 6px var(--sh-d), inset -3px -3px 6px var(--sh-l);
+    --inset-xs: inset 2px 2px 4px var(--sh-d), inset -2px -2px 4px var(--sh-l);
+    --radius: 20px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #2a2f39;
+      --text: #dde3ec;
+      --text-soft: #96a1b3;
+      --accent: #5f9fdf;
+      --accent-2: #4b88c6;
+      --accent-text: #85b8ee;
+      --green: #58c78b;
+      --green-2: #3fae74;
+      --amber: #e0b45c;
+      --red: #e0837a;
+      --warm: #eb8a5f;
+      --cold: #6fadde;
+      --sh-d: #1f232b;
+      --sh-l: #363d4a;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+
+  header.hero { padding: 52px 0 12px; text-align: center; }
+  .logo {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-weight: 800; font-size: 1.15rem; letter-spacing: -.01em;
+    color: var(--accent-text); margin-bottom: 22px;
+    text-decoration: none;
+  }
+  .logo .mark {
+    width: 40px; height: 40px; border-radius: 13px;
+    background: linear-gradient(145deg, var(--accent), var(--accent-2));
+    color: #fff; box-shadow: var(--raise-sm);
+    display: grid; place-items: center; font-size: 1.15rem;
+  }
+  h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 10px; letter-spacing: -.02em; line-height: 1.2; }
+  .sub { color: var(--text-soft); max-width: 620px; margin: 0 auto 30px; font-size: 1.02rem; }
+
+  .searchbox {
+    display: flex; gap: 14px; flex-wrap: wrap; align-items: stretch;
+    max-width: 640px; margin: 0 auto;
+  }
+  .searchbox input[type="search"] {
+    flex: 1 1 260px; border: none; outline: none;
+    background: var(--bg); box-shadow: var(--inset);
+    border-radius: 999px; min-width: 0;
+    font-size: 1.02rem; color: var(--text); padding: 15px 24px;
+  }
+  .searchbox input[type="search"]::placeholder { color: var(--text-soft); }
+  .searchbox input[type="search"]:focus { box-shadow: var(--inset), 0 0 0 2px var(--accent); }
+  .searchbox button {
+    border: none; border-radius: 999px; cursor: pointer;
+    background: linear-gradient(145deg, var(--accent), var(--accent-2));
+    color: #fff; box-shadow: var(--raise-sm);
+    font-size: 1rem; font-weight: 700; padding: 14px 30px;
+    transition: box-shadow .15s, transform .15s;
+  }
+  .searchbox button:hover { transform: translateY(-1px); box-shadow: var(--raise); }
+  .searchbox button:active { transform: none; box-shadow: var(--inset-sm); }
+  .searchbox button[disabled] { opacity: .6; cursor: wait; }
+  .place-hint { font-size: .84rem; color: var(--text-soft); margin: 14px 0 0; min-height: 1.3em; }
+
+  .status {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--bg); box-shadow: var(--inset-sm);
+    border-radius: var(--radius); padding: 16px 20px;
+    color: var(--text-soft); font-size: .92rem; margin: 22px 0;
+  }
+  .spinner {
+    width: 26px; height: 26px; flex: 0 0 auto; border-radius: 50%;
+    border: 3px solid var(--sh-d); border-top-color: var(--accent);
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  section.block { margin: 46px 0; }
+  section.block > h2 {
+    margin: 0 0 6px; font-size: 1.28rem; letter-spacing: -.01em;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  section.block > p.lead { margin: 0 0 20px; color: var(--text-soft); font-size: .95rem; }
+
+  .card {
+    background: var(--bg); box-shadow: var(--raise);
+    border-radius: var(--radius); padding: 22px 24px; margin: 16px 0;
+  }
+  .card.flat { box-shadow: var(--inset-sm); }
+
+  .tag {
+    display: inline-block; font-size: .72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+    padding: 4px 11px; border-radius: 999px;
+    background: var(--bg); box-shadow: var(--raise-xs); color: var(--text-soft);
+  }
+  .tag.warm { color: var(--warm); }
+  .tag.cold { color: var(--cold); }
+  .tag.ok { color: var(--green); }
+  .tag.weak { color: var(--amber); }
+  .tag.none { color: var(--red); }
+
+  /* --- Anomalie-Balken (divergierend, Nulllinie in der Mitte) --- */
+  .rows { display: flex; flex-direction: column; gap: 9px; }
+  .row {
+    display: grid; grid-template-columns: 92px 1fr 76px;
+    align-items: center; gap: 12px; font-size: .88rem;
+  }
+  .row .lbl { color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .row .val.warm { color: var(--warm); }
+  .row .val.cold { color: var(--cold); }
+  .bar {
+    position: relative; height: 22px; border-radius: 999px;
+    background: var(--bg); box-shadow: var(--inset-xs);
+  }
+  .bar .zero {
+    position: absolute; left: 50%; top: 3px; bottom: 3px; width: 1px;
+    background: var(--sh-d);
+  }
+  .bar .fill {
+    position: absolute; top: 4px; bottom: 4px; border-radius: 999px;
+    background: linear-gradient(145deg, var(--warm), var(--warm));
+    opacity: .85;
+  }
+  .bar .fill.cold { background: linear-gradient(145deg, var(--cold), var(--cold)); }
+  .bar .spread {
+    position: absolute; top: 8px; bottom: 8px; border-radius: 999px;
+    background: var(--text-soft); opacity: .28;
+  }
+  .bar .median {
+    position: absolute; top: 1px; bottom: 1px; width: 3px; border-radius: 2px;
+    background: var(--text);
+  }
+  .row.partial .lbl::after { content: " *"; color: var(--amber); }
+
+  .legend { font-size: .8rem; color: var(--text-soft); margin-top: 14px; }
+  .legend b { color: var(--text); font-weight: 600; }
+
+  /* --- Prognose-Monatskarten --- */
+  .months { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); }
+  .month {
+    background: var(--bg); box-shadow: var(--raise-sm);
+    border-radius: 16px; padding: 16px 18px;
+  }
+  .month h3 { margin: 0 0 4px; font-size: 1rem; }
+  .month .big {
+    font-size: 1.7rem; font-weight: 800; letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums; line-height: 1.1;
+  }
+  .month .big.warm { color: var(--warm); }
+  .month .big.cold { color: var(--cold); }
+  .month .unit { font-size: .82rem; color: var(--text-soft); font-weight: 600; }
+  .month .meta { font-size: .8rem; color: var(--text-soft); margin-top: 8px; }
+  .month .meta b { color: var(--text); font-weight: 700; }
+  .ens {
+    display: flex; height: 8px; border-radius: 999px; overflow: hidden;
+    box-shadow: var(--inset-xs); margin-top: 10px;
+  }
+  .ens .up { background: var(--warm); opacity: .8; }
+  .ens .dn { background: var(--cold); opacity: .8; }
+
+  /* --- Analogjahre --- */
+  .analogs { display: flex; flex-direction: column; gap: 12px; }
+  .analog {
+    display: grid; grid-template-columns: 74px 1fr; gap: 16px; align-items: center;
+    background: var(--bg); box-shadow: var(--raise-xs);
+    border-radius: 16px; padding: 14px 18px;
+  }
+  .analog .year { font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em; color: var(--accent-text); }
+  .analog .after { font-size: .88rem; color: var(--text-soft); }
+  .analog .after b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .analog .sim { font-size: .74rem; color: var(--text-soft); }
+
+  table.skill { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  table.skill th, table.skill td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--sh-d); }
+  table.skill th { font-weight: 600; color: var(--text-soft); font-size: .82rem; }
+  table.skill td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  table.skill tr:last-child td { border-bottom: none; }
+
+  .verdict {
+    border-radius: 16px; padding: 16px 20px; margin-top: 18px;
+    box-shadow: var(--inset-sm); font-size: .95rem;
+  }
+  .verdict b { font-weight: 700; }
+
+  details.meth { margin-top: 14px; }
+  details.meth summary {
+    cursor: pointer; font-size: .9rem; color: var(--accent-text);
+    padding: 10px 16px; border-radius: 999px; display: inline-block;
+    background: var(--bg); box-shadow: var(--raise-xs); list-style: none;
+  }
+  details.meth summary::-webkit-details-marker { display: none; }
+  details.meth[open] summary { box-shadow: var(--inset-xs); }
+  details.meth .body { font-size: .9rem; color: var(--text-soft); padding: 4px 4px 0; }
+  details.meth .body h4 { color: var(--text); font-size: .95rem; margin: 18px 0 6px; }
+  details.meth .body ul { margin: 6px 0; padding-left: 20px; }
+  details.meth .body li { margin: 5px 0; }
+  details.meth .body code {
+    background: var(--bg); box-shadow: var(--inset-xs); border-radius: 6px;
+    padding: 1px 6px; font-size: .85em;
+  }
+
+  .err {
+    box-shadow: var(--inset-sm); border-radius: var(--radius);
+    padding: 16px 20px; color: var(--red); font-size: .9rem; margin: 16px 0;
+  }
+  .err code { font-size: .85em; opacity: .8; word-break: break-all; }
+
+  footer {
+    margin: 70px 0 40px; padding-top: 26px;
+    border-top: 1px solid var(--sh-d);
+    font-size: .85rem; color: var(--text-soft); text-align: center;
+  }
+  footer a { color: var(--accent-text); }
+
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 76px 1fr 66px; gap: 9px; font-size: .82rem; }
+    .analog { grid-template-columns: 58px 1fr; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="hero">
+    <a class="logo" href="./"><span class="mark">◷</span> Saisonausblick</a>
+    <h1>Was die Modelle für die nächsten Monate sagen&nbsp;– und was das wirklich wert ist</h1>
+    <p class="sub">
+      Echte Ensemble-Daten eines Saisonvorhersagemodells, eingeordnet in die Klimatologie
+      deines Orts. Plus ein Blick auf vergleichbare Jahre der Vergangenheit – und eine
+      ehrliche Messung, wie gut dieser Vergleich historisch funktioniert hat.
+    </p>
+
+    <form class="searchbox" id="form">
+      <input type="search" id="q" placeholder="Ort eingeben, z. B. Fulda" autocomplete="off" spellcheck="false">
+      <button type="submit" id="go">Ausblick laden</button>
+    </form>
+    <p class="place-hint" id="placeHint"></p>
+  </header>
+
+  <div class="status" id="status" hidden>
+    <div class="spinner"></div>
+    <div id="statusText">Lade Daten …</div>
+  </div>
+
+  <div id="errors"></div>
+
+  <main id="out" hidden>
+
+    <!-- 1 · Aktuelle Lage -->
+    <section class="block" id="secNow">
+      <h2>Aktuelle Lage <span class="tag" id="nowTag"></span></h2>
+      <p class="lead">
+        Abweichung der Monatsmitteltemperatur vom Normalwert 1991–2020, die letzten 14 Monate.
+        Das ist Messhistorie (ERA5-Reanalyse), keine Prognose.
+      </p>
+      <div class="card">
+        <div class="rows" id="nowRows"></div>
+        <p class="legend" id="nowLegend"></p>
+      </div>
+    </section>
+
+    <!-- 2 · Saisonprognose -->
+    <section class="block" id="secFc">
+      <h2>Saisonprognose <span class="tag" id="fcTag">NOAA CFSv2</span></h2>
+      <p class="lead">
+        Monatsmittel aller Ensemble-Mitglieder, als Abweichung vom Normalwert 1991–2020.
+        Der Balken zeigt die Bandbreite des Ensembles, der Strich den Median.
+        Je weiter in der Zukunft, desto weniger aussagekräftig.
+      </p>
+      <div class="months" id="fcMonths"></div>
+      <div class="card flat" id="fcNote" style="margin-top:18px"></div>
+    </section>
+
+    <!-- 3 · Analogjahre -->
+    <section class="block" id="secAna">
+      <h2>Vergleichbare Jahre <span class="tag" id="anaTag"></span></h2>
+      <p class="lead" id="anaLead"></p>
+      <div class="analogs" id="anaList"></div>
+      <p class="legend" id="anaLegend"></p>
+    </section>
+
+    <!-- 4 · Validierung -->
+    <section class="block" id="secVal">
+      <h2>Wie verlässlich ist der Jahresvergleich? <span class="tag" id="valTag"></span></h2>
+      <p class="lead">
+        Nachgerechnet für jedes Jahr der Historie: Hätte man damals mit genau diesem
+        Verfahren die Folgemonate treffen können? Verglichen wird gegen die simpelste
+        denkbare Vorhersage – „es wird normal".
+      </p>
+      <div class="card">
+        <table class="skill" id="valTable"></table>
+        <div class="verdict" id="valVerdict"></div>
+      </div>
+    </section>
+
+    <!-- 5 · Methodik -->
+    <section class="block">
+      <h2>Methodik &amp; Grenzen</h2>
+      <details class="meth" id="meth">
+        <summary>Wie das alles gerechnet wird – und was es nicht kann</summary>
+        <div class="body">
+
+          <h4>Datenquellen</h4>
+          <ul>
+            <li><b>Historie:</b> Open-Meteo Archive API auf Basis der ERA5-Reanalyse des ECMWF,
+              Tageswerte ab 1950, Raster ca. 25 km. Die Jahre vor 1979 stammen aus der
+              ERA5-Rückerweiterung und sind mit weniger Beobachtungen gestützt – sie sind
+              brauchbar, aber unsicherer als der Zeitraum danach.</li>
+            <li><b>Prognose:</b> Open-Meteo Seasonal API auf Basis von NOAA CFSv2, ein
+              dynamisches Klimamodell mit mehreren Ensemble-Mitgliedern.</li>
+            <li><b>Ortssuche:</b> Open-Meteo Geocoding API.</li>
+          </ul>
+          <p>Alle drei sind kostenlos, ohne Schlüssel und direkt aus dem Browser nutzbar.
+             Es gibt kein Backend, nichts wird gespeichert, nichts getrackt.</p>
+
+          <h4>Normalwerte und Trend</h4>
+          <p>Normalwert ist das Mittel 1991–2020, wie von der WMO als Referenzperiode
+             empfohlen. Für den Jahresvergleich wird zusätzlich <b>pro Kalendermonat ein
+             linearer Trend abgezogen</b>. Ohne diesen Schritt wären die ähnlichsten Jahre
+             fast immer die jüngsten – schlicht weil es wärmer geworden ist. Der Trend ist
+             das stärkste Einzelsignal in den Daten, aber er ist eben kein Wettermuster.</p>
+
+          <h4>Analogverfahren</h4>
+          <p>Verglichen werden die trendbereinigten, monatsweise standardisierten
+             Temperaturabweichungen der letzten sechs Monate mit demselben Zeitfenster
+             jedes anderen Jahres. Distanzmaß ist der mittlere quadratische Abstand;
+             gezeigt werden die fünf ähnlichsten Jahre und was in ihnen danach folgte.
+             Jahre im Abstand von unter zwei Jahren zum Zielfenster werden ausgeschlossen,
+             damit sich die Zeitfenster nicht überlappen.</p>
+
+          <h4>Validierung</h4>
+          <p>Leave-one-out über alle Jahre der Historie: Für jedes Jahr wird die Vorhersage
+             allein aus den <i>übrigen</i> Jahren gebildet und mit dem tatsächlichen Verlauf
+             verglichen. Angegeben sind die Korrelation, der mittlere absolute Fehler und der
+             Skill-Score gegenüber der Klimatologie-Baseline. Ein Skill-Score von 0 bedeutet:
+             genauso gut wie „es wird normal". Negativ bedeutet: schlechter als nichts tun.</p>
+
+          <h4>Wichtige Einschränkung zur Modellprognose</h4>
+          <p>Die CFSv2-Werte werden hier <b>roh</b> gegen die ERA5-Klimatologie gestellt.
+             Sauber wäre eine Bias-Korrektur gegen die Modell-eigene Hindcast-Klimatologie –
+             dafür bräuchte es Datenmengen, die eine statische Seite nicht laden kann.
+             Ein Teil der gezeigten Abweichung ist deshalb systematischer Modellfehler und
+             nicht Signal. Die <i>Richtung</i> und die Ensemble-Streuung sind aussagekräftiger
+             als der absolute Betrag.</p>
+          <p>CFSv2 ist außerdem nicht das beste verfügbare System. Für Europa liefert
+             ECMWF SEAS5 – gebündelt im Copernicus C3S Multi-System – spürbar bessere
+             Ergebnisse. Diese Daten sind aber nur als GRIB/NetCDF mit Registrierung
+             abrufbar und damit für eine reine Browser-Seite nicht nutzbar.</p>
+
+          <h4>Was dieses Tool nicht kann</h4>
+          <ul>
+            <li>Kein Wetter für einen bestimmten Tag. Jenseits von etwa zwei Wochen ist
+              Tagesgenauigkeit physikalisch nicht erreichbar – wer sie anzeigt, rät.</li>
+            <li>Keine belastbaren Niederschlagsaussagen. Der Skill für Niederschlag liegt
+              in Mitteleuropa auf Saisonskala nahe null. Die Werte stehen hier nur zur
+              Einordnung – und um genau das sichtbar zu machen.</li>
+            <li>Keine lokalen Effekte. Ein Rasterpunkt von 25 km kennt weder Tallage noch
+              Stadtwärmeinsel.</li>
+          </ul>
+
+        </div>
+      </details>
+    </section>
+
+  </main>
+
+  <footer>
+    Daten: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+    (ERA5 / ECMWF, NOAA CFSv2) · CC BY 4.0 ·
+    Keine Werbung, kein Tracking, kein Backend.
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════════
+   Konfiguration
+   ═══════════════════════════════════════════════════════════════ */
+
+const HIST_START  = 1950;   // ERA5 reicht bis 1940; ab 1950 ist die Abdeckung solider
+const CLIM_FROM   = 1991;   // WMO-Referenzperiode
+const CLIM_TO     = 2020;
+const WIN_LEN     = 6;      // Länge des Vergleichsfensters in Monaten
+const LEAD_LEN    = 3;      // Vorhersagehorizont des Analogverfahrens in Monaten
+const K_ANALOGS   = 5;      // Anzahl der gezeigten/gemittelten Analogjahre
+const MIN_GAP_M   = 24;     // Mindestabstand in Monaten, damit sich Fenster nicht überlappen
+const MONTHS = ["Januar","Februar","März","April","Mai","Juni",
+                "Juli","August","September","Oktober","November","Dezember"];
+const MON_S  = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+
+const DEFAULT_PLACE = { name: "Fulda", admin: "Hessen", country: "Deutschland",
+                        lat: 50.5558, lon: 9.6808 };
+
+const $ = (id) => document.getElementById(id);
+
+/* ═══════════════════════════════════════════════════════════════
+   Kleine Helfer
+   ═══════════════════════════════════════════════════════════════ */
+
+const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
+const sum  = (a) => a.reduce((s, x) => s + x, 0);
+
+function std(a) {
+  if (a.length < 2) return 0;
+  const m = mean(a);
+  return Math.sqrt(sum(a.map((x) => (x - m) ** 2)) / (a.length - 1));
+}
+
+function quantile(sorted, p) {
+  if (!sorted.length) return NaN;
+  const i = (sorted.length - 1) * p;
+  const lo = Math.floor(i), hi = Math.ceil(i);
+  return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
+}
+
+function pearson(x, y) {
+  const n = x.length;
+  if (n < 3) return NaN;
+  const mx = mean(x), my = mean(y);
+  let sxy = 0, sxx = 0, syy = 0;
+  for (let i = 0; i < n; i++) {
+    const dx = x[i] - mx, dy = y[i] - my;
+    sxy += dx * dy; sxx += dx * dx; syy += dy * dy;
+  }
+  return (sxx === 0 || syy === 0) ? NaN : sxy / Math.sqrt(sxx * syy);
+}
+
+/** Lineare Regression y = a + b·x, gibt {a, b} zurück. */
+function linreg(x, y) {
+  const mx = mean(x), my = mean(y);
+  let num = 0, den = 0;
+  for (let i = 0; i < x.length; i++) {
+    num += (x[i] - mx) * (y[i] - my);
+    den += (x[i] - mx) ** 2;
+  }
+  const b = den === 0 ? 0 : num / den;
+  return { a: my - b * mx, b };
+}
+
+const fmtSigned = (v, d = 1) =>
+  (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(d).replace(".", ",");
+const fmtNum = (v, d = 2) => v.toFixed(d).replace(".", ",");
+
+/** Absoluter Monatsindex seit Januar HIST_START. */
+const absIdx = (year, month0) => (year - HIST_START) * 12 + month0;
+const idxYear = (i) => HIST_START + Math.floor(i / 12);
+const idxMon  = (i) => ((i % 12) + 12) % 12;
+
+/* ═══════════════════════════════════════════════════════════════
+   Netzwerk
+   ═══════════════════════════════════════════════════════════════ */
+
+async function getJSON(url) {
+  let res;
+  try {
+    res = await fetch(url);
+  } catch (e) {
+    throw new Error("Netzwerkfehler – Server nicht erreichbar (" + e.message + ")");
+  }
+  let json = null;
+  try { json = await res.json(); } catch (_) { /* ignorieren, unten behandelt */ }
+  // Open-Meteo meldet Fehler als {error: true, reason: "..."} – oft mit HTTP 400.
+  if (json && json.error) throw new Error(json.reason || "Unbekannter API-Fehler");
+  if (!res.ok) throw new Error("HTTP " + res.status + " " + res.statusText);
+  if (!json) throw new Error("Antwort war kein gültiges JSON");
+  return json;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Datenabruf
+   ═══════════════════════════════════════════════════════════════ */
+
+async function geocode(query) {
+  const url = "https://geocoding-api.open-meteo.com/v1/search"
+            + "?name=" + encodeURIComponent(query)
+            + "&count=1&language=de&format=json";
+  const j = await getJSON(url);
+  if (!j.results || !j.results.length) return null;
+  const r = j.results[0];
+  return {
+    name: r.name,
+    admin: r.admin1 || "",
+    country: r.country || "",
+    lat: r.latitude,
+    lon: r.longitude,
+  };
+}
+
+/** ERA5-Tageswerte ab HIST_START bis vor wenigen Tagen (Reanalyse hinkt nach). */
+async function fetchHistory(lat, lon) {
+  const end = new Date(Date.now() - 6 * 86400000);
+  const endStr = end.toISOString().slice(0, 10);
+  const url = "https://archive-api.open-meteo.com/v1/archive"
+            + "?latitude=" + lat + "&longitude=" + lon
+            + "&start_date=" + HIST_START + "-01-01"
+            + "&end_date=" + endStr
+            + "&daily=temperature_2m_mean,precipitation_sum"
+            + "&timezone=Europe%2FBerlin";
+  return getJSON(url);
+}
+
+/**
+ * Saisonprognose. Die genaue Parameterunterstützung variiert, deshalb werden
+ * mehrere Varianten der Reihe nach probiert und die Fehlermeldungen gesammelt.
+ */
+async function fetchSeasonal(lat, lon) {
+  const base = "https://seasonal-api.open-meteo.com/v1/seasonal"
+             + "?latitude=" + lat + "&longitude=" + lon + "&timezone=Europe%2FBerlin";
+  const variants = [
+    base + "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&forecast_days=270",
+    base + "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum",
+    base + "&daily=temperature_2m_max,temperature_2m_min",
+  ];
+  const problems = [];
+  for (const url of variants) {
+    try {
+      const j = await getJSON(url);
+      if (j && j.daily && j.daily.time && j.daily.time.length) return j;
+      problems.push("leere Antwort");
+    } catch (e) {
+      problems.push(e.message);
+    }
+  }
+  throw new Error(problems.join(" · "));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Aufbereitung der Historie
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Aggregiert Tageswerte zu Monatswerten.
+ * Liefert Arrays über den absoluten Monatsindex: t[i], p[i], days[i], expected[i].
+ */
+function aggregateMonthly(daily) {
+  const time = daily.time;
+  const tArr = daily.temperature_2m_mean || [];
+  const pArr = daily.precipitation_sum || [];
+
+  const last = time[time.length - 1];
+  const nMonths = absIdx(+last.slice(0, 4), +last.slice(5, 7) - 1) + 1;
+
+  const tSum = new Float64Array(nMonths);
+  const tN   = new Int32Array(nMonths);
+  const pSum = new Float64Array(nMonths);
+  const pN   = new Int32Array(nMonths);
+
+  for (let d = 0; d < time.length; d++) {
+    const y = +time[d].slice(0, 4), m = +time[d].slice(5, 7) - 1;
+    const i = absIdx(y, m);
+    if (i < 0 || i >= nMonths) continue;
+    const tv = tArr[d], pv = pArr[d];
+    if (tv !== null && tv !== undefined && !Number.isNaN(tv)) { tSum[i] += tv; tN[i]++; }
+    if (pv !== null && pv !== undefined && !Number.isNaN(pv)) { pSum[i] += pv; pN[i]++; }
+  }
+
+  const t = new Array(nMonths).fill(null);
+  const p = new Array(nMonths).fill(null);
+  const days = new Array(nMonths).fill(0);
+  const expected = new Array(nMonths).fill(0);
+
+  for (let i = 0; i < nMonths; i++) {
+    const y = idxYear(i), m = idxMon(i);
+    expected[i] = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    days[i] = tN[i];
+    if (tN[i] > 0) t[i] = tSum[i] / tN[i];
+    // Niederschlag nur bei vollständigem Monat als Summe sinnvoll
+    if (pN[i] >= expected[i] - 1) p[i] = pSum[i];
+  }
+  return { t, p, days, expected, nMonths };
+}
+
+/**
+ * Normalwerte 1991–2020, linearer Trend pro Kalendermonat, trendbereinigte
+ * Anomalien und deren monatsweise Standardabweichung.
+ */
+function buildClimatology(monthly) {
+  const { t, p, nMonths } = monthly;
+
+  const normT = new Array(12).fill(NaN);
+  const normP = new Array(12).fill(NaN);
+  const trend = new Array(12).fill(null);   // {a, b} auf Basis Jahr → Temperatur
+  const sdT   = new Array(12).fill(1);
+
+  for (let m = 0; m < 12; m++) {
+    const climT = [], climP = [], regX = [], regY = [];
+    for (let y = HIST_START; y <= idxYear(nMonths - 1); y++) {
+      const i = absIdx(y, m);
+      if (i < 0 || i >= nMonths) continue;
+      if (t[i] !== null) {
+        regX.push(y); regY.push(t[i]);
+        if (y >= CLIM_FROM && y <= CLIM_TO) climT.push(t[i]);
+      }
+      if (p[i] !== null && y >= CLIM_FROM && y <= CLIM_TO) climP.push(p[i]);
+    }
+    if (climT.length) normT[m] = mean(climT);
+    if (climP.length) normP[m] = mean(climP);
+    if (regX.length >= 10) trend[m] = linreg(regX, regY);
+  }
+
+  // Trendbereinigte Anomalie: Abstand zur Trendgeraden des jeweiligen Monats.
+  const anomDet = new Array(nMonths).fill(null);
+  for (let i = 0; i < nMonths; i++) {
+    const m = idxMon(i), y = idxYear(i);
+    if (t[i] === null || !trend[m]) continue;
+    anomDet[i] = t[i] - (trend[m].a + trend[m].b * y);
+  }
+
+  for (let m = 0; m < 12; m++) {
+    const vals = [];
+    for (let i = m; i < nMonths; i += 12) if (anomDet[i] !== null) vals.push(anomDet[i]);
+    const s = std(vals);
+    sdT[m] = s > 0.01 ? s : 1;
+  }
+
+  // z-standardisiert, damit alle Monate gleich stark in die Distanz eingehen
+  const z = anomDet.map((v, i) => (v === null ? null : v / sdT[idxMon(i)]));
+
+  // Anomalie gegen den Normalwert 1991–2020 (das, was Nutzer erwarten)
+  const anomNorm = t.map((v, i) => (v === null || Number.isNaN(normT[idxMon(i)]))
+                                   ? null : v - normT[idxMon(i)]);
+
+  return { normT, normP, trend, sdT, anomDet, anomNorm, z };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Analogverfahren
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Fenster der Länge WIN_LEN, das bei Index `end` endet – oder null bei Lücken. */
+function window6(z, end) {
+  if (end - WIN_LEN + 1 < 0) return null;
+  const w = [];
+  for (let i = end - WIN_LEN + 1; i <= end; i++) {
+    if (z[i] === null || z[i] === undefined) return null;
+    w.push(z[i]);
+  }
+  return w;
+}
+
+/** Mittlere trendbereinigte Anomalie der LEAD_LEN Monate nach `end`. */
+function target(anomDet, end) {
+  const v = [];
+  for (let i = end + 1; i <= end + LEAD_LEN; i++) {
+    if (i >= anomDet.length || anomDet[i] === null) return null;
+    v.push(anomDet[i]);
+  }
+  return mean(v);
+}
+
+/**
+ * Findet die ähnlichsten Jahre zum Fenster, das bei `anchor` endet.
+ * `requireTarget`: nur Kandidaten, für die auch die Folgemonate bekannt sind.
+ */
+function findAnalogs(z, anomDet, anchor, k, requireTarget) {
+  const base = window6(z, anchor);
+  if (!base) return [];
+  const m = idxMon(anchor);
+  const out = [];
+
+  for (let i = m; i < z.length; i += 12) {
+    if (Math.abs(i - anchor) < MIN_GAP_M) continue;
+    const w = window6(z, i);
+    if (!w) continue;
+    const tgt = target(anomDet, i);
+    if (requireTarget && tgt === null) continue;
+    let d = 0;
+    for (let j = 0; j < WIN_LEN; j++) d += (w[j] - base[j]) ** 2;
+    out.push({ idx: i, year: idxYear(i), dist: Math.sqrt(d / WIN_LEN), target: tgt });
+  }
+  out.sort((a, b) => a.dist - b.dist);
+  return out.slice(0, k);
+}
+
+/**
+ * Leave-one-out-Validierung für das aktuelle Kalenderfenster.
+ * Für jedes Jahr wird nur aus den übrigen Jahren vorhergesagt.
+ */
+function validate(z, anomDet, anchorMonth) {
+  const preds = [], obs = [];
+  for (let i = anchorMonth; i < z.length; i += 12) {
+    const actual = target(anomDet, i);
+    if (actual === null || !window6(z, i)) continue;
+    const an = findAnalogs(z, anomDet, i, K_ANALOGS, true);
+    if (an.length < K_ANALOGS) continue;
+    preds.push(mean(an.map((a) => a.target)));
+    obs.push(actual);
+  }
+  if (preds.length < 15) return { n: preds.length, ok: false };
+
+  const maeA = mean(preds.map((p, i) => Math.abs(p - obs[i])));
+  const maeC = mean(obs.map((o) => Math.abs(o)));   // Klimatologie sagt „Anomalie 0"
+  return {
+    ok: true,
+    n: preds.length,
+    r: pearson(preds, obs),
+    maeAnalog: maeA,
+    maeClim: maeC,
+    skill: maeC === 0 ? 0 : 1 - maeA / maeC,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Aufbereitung der Saisonprognose
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Sucht alle Ensemble-Varianten einer Variable (z. B. "…_member01"). */
+function memberKeys(daily, prefix) {
+  return Object.keys(daily)
+    .filter((k) => k === prefix || k.startsWith(prefix + "_"))
+    .sort();
+}
+const suffixOf = (key, prefix) => key.slice(prefix.length);
+
+/**
+ * Aggregiert die Ensemble-Tageswerte zu Monatswerten je Mitglied.
+ * Liefert [{ key, year, month, temps: [...], precs: [...] }] pro Monat.
+ */
+function aggregateSeasonal(seasonal) {
+  const d = seasonal.daily;
+  const maxKeys = memberKeys(d, "temperature_2m_max");
+  const minKeys = memberKeys(d, "temperature_2m_min");
+  const prcKeys = memberKeys(d, "precipitation_sum");
+  if (!maxKeys.length || !minKeys.length) return [];
+
+  // Mitglieder über den gemeinsamen Suffix paaren (max/min gehören zusammen)
+  const minBySuffix = new Map(minKeys.map((k) => [suffixOf(k, "temperature_2m_min"), k]));
+  const prcBySuffix = new Map(prcKeys.map((k) => [suffixOf(k, "precipitation_sum"), k]));
+
+  const pairs = [];
+  for (const mk of maxKeys) {
+    const sfx = suffixOf(mk, "temperature_2m_max");
+    const nk = minBySuffix.get(sfx);
+    if (nk) pairs.push({ max: mk, min: nk, prc: prcBySuffix.get(sfx) || null });
+  }
+  if (!pairs.length) return [];
+
+  const buckets = new Map();  // "YYYY-MM" → { tSum[], tN[], pSum[], pN[] }
+  const time = d.time;
+
+  for (let i = 0; i < time.length; i++) {
+    const key = time[i].slice(0, 7);
+    let b = buckets.get(key);
+    if (!b) {
+      b = {
+        year: +key.slice(0, 4), month: +key.slice(5, 7) - 1,
+        tSum: new Float64Array(pairs.length), tN: new Int32Array(pairs.length),
+        pSum: new Float64Array(pairs.length), pN: new Int32Array(pairs.length),
+        days: 0,
+      };
+      buckets.set(key, b);
+    }
+    b.days++;
+    for (let m = 0; m < pairs.length; m++) {
+      const hi = d[pairs[m].max][i], lo = d[pairs[m].min][i];
+      if (hi !== null && lo !== null && !Number.isNaN(hi) && !Number.isNaN(lo)) {
+        b.tSum[m] += (hi + lo) / 2; b.tN[m]++;
+      }
+      if (pairs[m].prc) {
+        const pv = d[pairs[m].prc][i];
+        if (pv !== null && !Number.isNaN(pv)) { b.pSum[m] += pv; b.pN[m]++; }
+      }
+    }
+  }
+
+  const out = [];
+  for (const b of buckets.values()) {
+    const full = new Date(Date.UTC(b.year, b.month + 1, 0)).getUTCDate();
+    if (b.days < full - 2) continue;              // angebrochene Monate verwerfen
+    const temps = [], precs = [];
+    for (let m = 0; m < pairs.length; m++) {
+      if (b.tN[m] >= full - 2) temps.push(b.tSum[m] / b.tN[m]);
+      if (b.pN[m] >= full - 2) precs.push(b.pSum[m]);
+    }
+    if (temps.length) out.push({ year: b.year, month: b.month, temps, precs, members: pairs.length });
+  }
+  out.sort((a, b) => (a.year - b.year) || (a.month - b.month));
+  return out;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Darstellung
+   ═══════════════════════════════════════════════════════════════ */
+
+function bar(value, scale, opts = {}) {
+  // Divergierender Balken; 0 liegt in der Mitte, `scale` ist der halbe Vollausschlag.
+  const clamp = (v) => Math.max(-1, Math.min(1, v / scale));
+  const el = document.createElement("div");
+  el.className = "bar";
+  el.innerHTML = '<div class="zero"></div>';
+
+  if (opts.lo !== undefined && opts.hi !== undefined) {
+    const a = clamp(opts.lo), b = clamp(opts.hi);
+    const s = document.createElement("div");
+    s.className = "spread";
+    s.style.left  = (50 + Math.min(a, b) * 50) + "%";
+    s.style.width = Math.max(1.5, Math.abs(b - a) * 50) + "%";
+    el.appendChild(s);
+  }
+
+  const c = clamp(value);
+  if (opts.lo !== undefined) {
+    const m = document.createElement("div");
+    m.className = "median";
+    m.style.left = "calc(" + (50 + c * 50) + "% - 1.5px)";
+    el.appendChild(m);
+  } else {
+    const f = document.createElement("div");
+    f.className = "fill" + (value < 0 ? " cold" : "");
+    f.style.left  = (50 + Math.min(0, c) * 50) + "%";
+    f.style.width = Math.max(1, Math.abs(c) * 50) + "%";
+    el.appendChild(f);
+  }
+  return el;
+}
+
+function renderNow(monthly, clim) {
+  const rows = $("nowRows");
+  rows.innerHTML = "";
+
+  const last = monthly.nMonths - 1;
+  const first = Math.max(0, last - 13);
+  const vals = [];
+  for (let i = first; i <= last; i++) if (clim.anomNorm[i] !== null) vals.push(Math.abs(clim.anomNorm[i]));
+  const scale = Math.max(2, Math.ceil(Math.max(...vals, 1)));
+
+  let partial = false;
+  for (let i = last; i >= first; i--) {
+    const a = clim.anomNorm[i];
+    if (a === null) continue;
+    const isPartial = monthly.days[i] < monthly.expected[i] - 1;
+    if (isPartial) partial = true;
+
+    const row = document.createElement("div");
+    row.className = "row" + (isPartial ? " partial" : "");
+
+    const lbl = document.createElement("div");
+    lbl.className = "lbl";
+    lbl.textContent = MON_S[idxMon(i)] + " " + idxYear(i);
+
+    const val = document.createElement("div");
+    val.className = "val " + (a >= 0 ? "warm" : "cold");
+    val.textContent = fmtSigned(a) + " K";
+
+    row.append(lbl, bar(a, scale), val);
+    rows.appendChild(row);
+  }
+
+  const y12 = [];
+  for (let i = Math.max(0, last - 11); i <= last; i++) if (clim.anomNorm[i] !== null) y12.push(clim.anomNorm[i]);
+  const avg12 = y12.length ? mean(y12) : 0;
+  $("nowTag").textContent = fmtSigned(avg12) + " K im Schnitt (12 Mon.)";
+  $("nowTag").className = "tag " + (avg12 >= 0 ? "warm" : "cold");
+  $("nowLegend").innerHTML =
+    "Skala: ±" + scale + " K. " + (partial ? "<b>*</b> unvollständiger Monat. " : "")
+    + "Bezug ist das Mittel " + CLIM_FROM + "–" + CLIM_TO + ".";
+}
+
+function renderForecast(fcMonths, clim) {
+  const box = $("fcMonths");
+  box.innerHTML = "";
+  if (!fcMonths.length) return;
+
+  for (const fm of fcMonths) {
+    const norm = clim.normT[fm.month];
+    const sorted = [...fm.temps].sort((a, b) => a - b);
+    const med = quantile(sorted, 0.5);
+    const lo  = quantile(sorted, 0.1);
+    const hi  = quantile(sorted, 0.9);
+
+    const anom = Number.isNaN(norm) ? null : med - norm;
+    const above = Number.isNaN(norm) ? 0 : fm.temps.filter((t) => t > norm).length;
+
+    const card = document.createElement("div");
+    card.className = "month";
+
+    const h = document.createElement("h3");
+    h.textContent = MONTHS[fm.month] + " " + fm.year;
+    card.appendChild(h);
+
+    if (anom === null) {
+      card.insertAdjacentHTML("beforeend",
+        '<div class="meta">Kein Normalwert für diesen Monat verfügbar.</div>');
+      box.appendChild(card);
+      continue;
+    }
+
+    const big = document.createElement("div");
+    big.className = "big " + (anom >= 0 ? "warm" : "cold");
+    big.innerHTML = fmtSigned(anom) + ' <span class="unit">K ggü. normal</span>';
+    card.appendChild(big);
+
+    card.insertAdjacentHTML("beforeend",
+      '<div class="meta">Ensemble-Spanne ' + fmtSigned(lo - norm) + " bis "
+      + fmtSigned(hi - norm) + " K<br>Normalwert " + fmtNum(norm, 1) + " °C · "
+      + "<b>" + above + " von " + fm.temps.length + "</b> Mitgliedern über dem Normalwert</div>");
+
+    const ens = document.createElement("div");
+    ens.className = "ens";
+    const pct = (above / fm.temps.length) * 100;
+    ens.innerHTML = '<div class="up" style="width:' + pct + '%"></div>'
+                  + '<div class="dn" style="width:' + (100 - pct) + '%"></div>';
+    card.appendChild(ens);
+
+    if (fm.precs.length) {
+      const pMed = quantile([...fm.precs].sort((a, b) => a - b), 0.5);
+      const pNorm = clim.normP[fm.month];
+      const pTxt = Number.isNaN(pNorm)
+        ? Math.round(pMed) + " mm"
+        : Math.round(pMed) + " mm · normal " + Math.round(pNorm) + " mm";
+      card.insertAdjacentHTML("beforeend",
+        '<div class="meta">Niederschlag (Median): ' + pTxt
+        + '<br><span style="opacity:.75">Saisonaler Niederschlags-Skill ist nahe null – nur zur Einordnung.</span></div>');
+    }
+
+    box.appendChild(card);
+  }
+
+  const n = fcMonths[0].temps.length;
+  $("fcTag").textContent = "NOAA CFSv2 · " + n + " Mitglied" + (n === 1 ? "" : "er");
+  $("fcNote").innerHTML =
+    "<b>Rohe Modellwerte.</b> Sie sind hier nicht bias-korrigiert – ein Teil der "
+    + "gezeigten Abweichung ist systematischer Modellfehler, nicht Signal. Aussagekräftig "
+    + "sind vor allem die Richtung und wie einig sich das Ensemble ist. "
+    + "Details dazu im Methodik-Abschnitt.";
+}
+
+function renderAnalogs(analogs, anchor, clim) {
+  const list = $("anaList");
+  list.innerHTML = "";
+
+  const from = MON_S[idxMon(anchor - WIN_LEN + 1)];
+  const to   = MON_S[idxMon(anchor)];
+  const leadFrom = MON_S[idxMon(anchor + 1)];
+  const leadTo   = MON_S[idxMon(anchor + LEAD_LEN)];
+
+  $("anaLead").innerHTML =
+    "Welche Jahre seit " + HIST_START + " hatten im Zeitraum <b>" + from + "–" + to
+    + "</b> ein ähnliches Temperaturmuster wie jetzt? Und wie lief es in diesen Jahren "
+    + "danach (<b>" + leadFrom + "–" + leadTo + "</b>)? Alle Werte sind trendbereinigt, "
+    + "damit nicht einfach die jüngsten Jahre gewinnen.";
+
+  const withTarget = analogs.filter((a) => a.target !== null);
+  if (!withTarget.length) {
+    list.innerHTML = '<div class="card flat">Keine vergleichbaren Jahre mit vollständigen '
+                   + 'Folgedaten gefunden.</div>';
+    return;
+  }
+
+  for (const a of withTarget) {
+    const el = document.createElement("div");
+    el.className = "analog";
+    const dir = a.target >= 0 ? "wärmer" : "kühler";
+    el.innerHTML =
+      '<div><div class="year">' + a.year + '</div>'
+      + '<div class="sim">d = ' + fmtNum(a.dist, 2) + "</div></div>"
+      + '<div class="after">Danach (' + leadFrom + "–" + leadTo + "): <b>"
+      + fmtSigned(a.target) + " K</b> " + dir + " als für dieses Jahr zu erwarten war</div>";
+    list.appendChild(el);
+  }
+
+  const avg = mean(withTarget.map((a) => a.target));
+  $("anaTag").textContent = "Mittel " + fmtSigned(avg) + " K";
+  $("anaTag").className = "tag " + (avg >= 0 ? "warm" : "cold");
+  $("anaLegend").innerHTML =
+    "<b>d</b> ist der Abstand im standardisierten Anomalie-Raum – kleiner heißt ähnlicher. "
+    + "Wie viel diese Ähnlichkeit wert ist, steht im nächsten Abschnitt. "
+    + "Die Angabe „wärmer/kühler als zu erwarten war" bezieht sich auf die Trendgerade des "
+    + "jeweiligen Jahres, nicht auf heutige Verhältnisse.";
+}
+
+function renderValidation(v, anchor) {
+  const tbl = $("valTable");
+  const leadFrom = MON_S[idxMon(anchor + 1)];
+  const leadTo   = MON_S[idxMon(anchor + LEAD_LEN)];
+
+  if (!v.ok) {
+    tbl.innerHTML = "";
+    $("valVerdict").innerHTML =
+      "Zu wenige vollständige Jahre für eine belastbare Auswertung (" + v.n + " Fälle).";
+    $("valTag").textContent = "nicht auswertbar";
+    $("valTag").className = "tag weak";
+    return;
+  }
+
+  const rBad = Number.isNaN(v.r);
+  tbl.innerHTML =
+    "<tr><th>Kennzahl</th><th style='text-align:right'>Wert</th></tr>"
+    + "<tr><td>Getestete Jahre</td><td class='num'>" + v.n + "</td></tr>"
+    + "<tr><td>Korrelation Vorhersage ↔ Realität</td><td class='num'>"
+      + (rBad ? "–" : fmtNum(v.r, 2)) + "</td></tr>"
+    + "<tr><td>Mittlerer Fehler Analogverfahren</td><td class='num'>"
+      + fmtNum(v.maeAnalog, 2) + " K</td></tr>"
+    + "<tr><td>Mittlerer Fehler „es wird normal\"</td><td class='num'>"
+      + fmtNum(v.maeClim, 2) + " K</td></tr>"
+    + "<tr><td>Skill-Score gegenüber dieser Baseline</td><td class='num'>"
+      + fmtSigned(v.skill * 100, 0) + " %</td></tr>";
+
+  let cls, tag, txt;
+  if (v.skill > 0.10) {
+    cls = "ok"; tag = "messbarer Vorteil";
+    txt = "<b>Das Verfahren schlägt die Baseline.</b> Für " + leadFrom + "–" + leadTo
+        + " an diesem Ort ist der Jahresvergleich im Mittel um "
+        + fmtNum(v.skill * 100, 0) + " % genauer als die Annahme „es wird normal". "
+        + "Das ist ein reales, aber kleines Signal – kein Grund, dem Ausblick Tagesgenauigkeit zuzutrauen.";
+  } else if (v.skill > 0.02) {
+    cls = "weak"; tag = "schwacher Vorteil";
+    txt = "<b>Grenzwertig.</b> Der Vorsprung vor der Baseline liegt bei nur "
+        + fmtNum(v.skill * 100, 0) + " % und ist bei " + v.n
+        + " getesteten Jahren statistisch kaum von Zufall zu unterscheiden. "
+        + "Als Vorhersage würde ich mich darauf nicht stützen.";
+  } else {
+    cls = "none"; tag = "kein Vorteil";
+    txt = "<b>Kein nachweisbarer Vorteil.</b> Der Jahresvergleich ist für "
+        + leadFrom + "–" + leadTo + " an diesem Ort nicht besser als die Annahme "
+        + "„es wird normal"" + (v.skill < 0 ? " – sondern schlechter" : "") + ". "
+        + "Genau dafür ist dieser Abschnitt da: Das Verfahren sieht überzeugend aus, "
+        + "hält aber nicht, was die Optik verspricht. Die Analogjahre oben taugen als "
+        + "Illustration der Bandbreite, nicht als Prognose.";
+  }
+  $("valTag").textContent = tag;
+  $("valTag").className = "tag " + cls;
+  $("valVerdict").innerHTML = txt;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Ablauf
+   ═══════════════════════════════════════════════════════════════ */
+
+function setStatus(text) {
+  $("status").hidden = false;
+  $("statusText").textContent = text;
+}
+function clearStatus() { $("status").hidden = true; }
+
+function showError(title, detail) {
+  const el = document.createElement("div");
+  el.className = "err";
+  el.innerHTML = "<b>" + title + "</b><br><code>" + String(detail).replace(/</g, "&lt;") + "</code>";
+  $("errors").appendChild(el);
+}
+
+let busy = false;
+
+async function run(place) {
+  if (busy) return;
+  busy = true;
+  $("go").disabled = true;
+  $("errors").innerHTML = "";
+
+  const label = [place.name, place.admin, place.country].filter(Boolean).join(", ");
+  $("placeHint").textContent = label + " · " + fmtNum(place.lat, 3) + "°N "
+                             + fmtNum(place.lon, 3) + "°O";
+
+  try {
+    setStatus("Lade Messhistorie seit " + HIST_START + " – das sind einige Zehntausend Tageswerte …");
+    const hist = await fetchHistory(place.lat, place.lon);
+
+    setStatus("Berechne Normalwerte, Trend und Anomalien …");
+    const monthly = aggregateMonthly(hist.daily);
+    const clim = buildClimatology(monthly);
+
+    // Letzter vollständiger Monat ist der Ankerpunkt für den Jahresvergleich
+    let anchor = monthly.nMonths - 1;
+    while (anchor > 0 && (monthly.t[anchor] === null
+           || monthly.days[anchor] < monthly.expected[anchor] - 1)) anchor--;
+
+    $("out").hidden = false;
+    renderNow(monthly, clim);
+
+    setStatus("Suche vergleichbare Jahre und validiere das Verfahren …");
+    const analogs = findAnalogs(clim.z, clim.anomDet, anchor, K_ANALOGS, true);
+    renderAnalogs(analogs, anchor, clim);
+    renderValidation(validate(clim.z, clim.anomDet, idxMon(anchor)), anchor);
+
+    setStatus("Lade Saisonprognose …");
+    try {
+      const seasonal = await fetchSeasonal(place.lat, place.lon);
+      const fcMonths = aggregateSeasonal(seasonal).filter((m) => {
+        const now = new Date();
+        return m.year > now.getFullYear()
+            || (m.year === now.getFullYear() && m.month >= now.getMonth());
+      });
+      if (fcMonths.length) {
+        renderForecast(fcMonths, clim);
+      } else {
+        $("secFc").hidden = true;
+        showError("Saisonprognose übersprungen",
+                  "Die Antwort enthielt keine vollständigen Zukunftsmonate.");
+      }
+    } catch (e) {
+      $("secFc").hidden = true;
+      showError("Saisonprognose nicht verfügbar", e.message);
+    }
+
+    clearStatus();
+    try {
+      const u = new URL(location.href);
+      u.searchParams.set("ort", place.name);
+      history.replaceState(null, "", u);
+    } catch (_) { /* egal */ }
+
+  } catch (e) {
+    clearStatus();
+    showError("Daten konnten nicht geladen werden", e.message);
+  } finally {
+    busy = false;
+    $("go").disabled = false;
+  }
+}
+
+$("form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const q = $("q").value.trim();
+  if (!q) return;
+  $("go").disabled = true;
+  setStatus("Suche Ort …");
+  try {
+    const place = await geocode(q);
+    if (!place) {
+      clearStatus();
+      $("go").disabled = false;
+      $("placeHint").textContent = "Kein Ort mit diesem Namen gefunden.";
+      return;
+    }
+    $("go").disabled = false;
+    run(place);
+  } catch (e) {
+    clearStatus();
+    $("go").disabled = false;
+    showError("Ortssuche fehlgeschlagen", e.message);
+  }
+});
+
+// Start: ?ort=… aus der URL, sonst Fulda
+(async function init() {
+  const q = new URLSearchParams(location.search).get("ort");
+  if (q) {
+    $("q").value = q;
+    try {
+      const p = await geocode(q);
+      if (p) return run(p);
+    } catch (_) { /* fällt unten auf den Standardort zurück */ }
+  }
+  $("q").value = DEFAULT_PLACE.name;
+  run(DEFAULT_PLACE);
+})();
+</script>
+
+</body>
+</html>
