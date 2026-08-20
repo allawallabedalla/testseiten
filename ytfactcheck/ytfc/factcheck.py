@@ -18,7 +18,9 @@ from dataclasses import dataclass, field
 import anthropic
 
 WEB_SEARCH_TOOL = {"type": "web_search_20260209", "name": "web_search"}
-MAX_PAUSE_RESUMES = 5
+# Jeder Resume sendet den bereits angewachsenen Kontext erneut — bei einer
+# langen Suchkette ist das der teuerste Einzelposten. Deshalb knapp halten.
+MAX_PAUSE_RESUMES = 2
 
 VERDICTS = (
     "belegt",

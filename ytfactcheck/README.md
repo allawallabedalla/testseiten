@@ -124,18 +124,54 @@ Unüberprüfbare Punkte werden nie in einen Kommentar übernommen.
 Das Rechercheprotokoll steht ausklappbar in jedem Bericht: du kannst jedes
 Urteil bis zur Suchanfrage zurückverfolgen.
 
-## Kosten
+## Kosten — und warum sie hoch sind
 
-Pro Video ein Extraktionsaufruf plus zwei Aufrufe je geprüfter Behauptung.
-Bei acht Behauptungen sind das 17 Aufrufe. Der Systemprompt ist über alle
-Videos hinweg identisch und wird gecacht. Größenordnung mit `claude-opus-5`
-($5/$25 pro Mio. Token): grob **0,50–1,50 € pro Video**, bei
-`problematisch` mit `xhigh` mehr. Bei fünf Kanälen mit je einem Video am Tag
-landest du im mittleren zweistelligen Bereich pro Monat.
+Realistisch, mit `claude-opus-5` und heutigen Preisen:
 
-Günstiger wird es mit `model: claude-sonnet-5` in der Config; die
-Behauptungserkennung wird dann merklich grobkörniger. Alternativ die
-`max_claims` senken — das ist der wirksamere Hebel.
+| Stufe | pro Video |
+|---|---|
+| `normal` (5 Behauptungen, 5 Suchen) | ~1,60 € |
+| `erhoeht` (8 Behauptungen, 6 Suchen) | ~3,20 € |
+| `problematisch` (12, 8 Suchen, + Einordnung) | ~7,80 € |
+
+Bei fünf Kanälen mit je einem Video am Tag sind das **grob 600 € im Monat**.
+Das ist viel, und der Grund ist eine einzige Zahl:
+
+```
+Recherche für EINE Behauptung, 8 Suchen:
+  Eingabe    82.000 Token   $0.41   ← 90 % der Kosten
+  Ausgabe     6.000 Token   $0.15
+  8 Suchen                  $0.08
+```
+
+82.000 Eingabe-Token für eine einzige Behauptung. Der Grund: die Websuche
+läuft serverseitig in **einem** Turn, und jede Runde bekommt den bisherigen
+Kontext erneut vorgelegt. Die achte Suche liest also die Ergebnisse der
+ersten sieben nochmal mit. Die Eingabemenge wächst quadratisch mit der Zahl
+der Suchen — und das mal zwölf Behauptungen.
+
+Dazu zwei kleinere Posten: Denk-Token werden zum **Ausgabe**-Preis
+abgerechnet (25 $/Mio.), und `xhigh` denkt viel. Websuche kostet zusätzlich
+1 Cent pro Anfrage.
+
+### Was das billiger macht
+
+| Maßnahme | problematisch/Video | Kostet Qualität? |
+|---|---|---|
+| jetzt | 7,80 € | – |
+| Batch-API statt Live-Aufrufen | 4,35 € | nein |
+| + Urteilsschritt auf Haiku 4.5 | 4,17 € | nein |
+| + `max_uses` von 8 auf 4 | 1,98 € | ja, etwas |
+| + nur Behauptungen ab Relevanz 3 | 1,06 € | ja |
+
+Die ersten beiden sind geschenkt. Der Bot läuft per Cron, es wartet niemand
+auf die Antwort — die [Batch-API](https://platform.claude.com/docs/en/build-with-claude/batch-processing)
+halbiert dafür alle Token-Kosten. Und der Urteilsschritt formt nur ein
+fertiges Protokoll in ein Schema; dafür braucht es kein Spitzenmodell.
+
+Die letzten beiden nehmen Gründlichkeit weg — gerade da, wo du sie wolltest.
+Wegen des quadratischen Wachstums ist `max_uses` allerdings der mit Abstand
+stärkste Hebel: halb so viele Suchen kosten ein Viertel.
 
 ## Wenn keine Transkripte kommen
 
